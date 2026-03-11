@@ -75,9 +75,9 @@ export async function POST(req: NextRequest) {
       (a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
     );
 
-    // Start first step
+    // Start first step with category hint for faster processing
     const first = sortedItems[0];
-    const { id, error } = await startTryOn(body.photoUrl, first.imageUrl);
+    const { id, error } = await startTryOn(body.photoUrl, first.imageUrl, first.category);
 
     if (error) {
       return NextResponse.json({ error }, { status: 500 });

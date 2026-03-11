@@ -18,24 +18,34 @@ export function PhotoUpload() {
       setUploading(true);
 
       try {
-        // Dynamic import to avoid SSR issues
+        // Compress image client-side before uploading
         const imageCompression = (await import("browser-image-compression")).default;
         const processedFile = await imageCompression(file, {
-          maxSizeMB: 3,
-          maxWidthOrHeight: 2048,
+          maxSizeMB: 2,
+          maxWidthOrHeight: 1024,
           useWebWorker: true,
         });
 
-        // Create local preview URL + base64 for API
+        // Create local preview URL
         const previewUrl = URL.createObjectURL(processedFile);
-        const buffer = await processedFile.arrayBuffer();
-        const base64 = btoa(
-          new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-        );
-        const dataUrl = `data:${processedFile.type};base64,${base64}`;
 
-        // Store preview URL for display, dataUrl for API calls
-        setPhoto(previewUrl, processedFile, dataUrl);
+        // Upload to Vercel Blob for a public URL (instead of base64)
+        const formData = new FormData();
+        formData.append("photo", processedFile);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Erro ao fazer upload");
+        }
+
+        // Store preview URL for display, blob URL for API calls
+        setPhoto(previewUrl, processedFile, data.url);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao processar foto");
       } finally {

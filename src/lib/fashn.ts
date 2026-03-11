@@ -6,10 +6,20 @@ function getApiKey(): string {
   return key;
 }
 
+// Map internal category names to Fashn API category values
+function mapCategory(category: string): string {
+  const categoryMap: Record<string, string> = {
+    tops: "tops",
+    bottoms: "bottoms",
+    shoes: "auto",
+  };
+  return categoryMap[category] || "auto";
+}
+
 export async function startTryOn(
   modelImageUrl: string,
-  productImageUrl: string,
-  prompt?: string
+  garmentImageUrl: string,
+  category?: string
 ): Promise<{ id: string; error: string | null }> {
   const res = await fetch(`${FASHN_BASE}/run`, {
     method: "POST",
@@ -18,13 +28,13 @@ export async function startTryOn(
       Authorization: `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model_name: "tryon-max",
+      model_name: "tryon-v1.6",
       inputs: {
         model_image: modelImageUrl,
-        product_image: productImageUrl,
+        garment_image: garmentImageUrl,
+        category: category ? mapCategory(category) : "auto",
         output_format: "jpeg",
         num_images: 1,
-        ...(prompt && { prompt }),
       },
     }),
   });
@@ -54,6 +64,35 @@ export async function pollTryOnStatus(
   }
 
   return res.json();
+}
+
+// Aggressive polling: checks Fashn multiple times within a single call
+// to detect completion faster (reduces inter-step latency by up to 6s)
+export async function aggressivePoll(
+  id: string,
+  maxChecks = 4,
+  intervalMs = 1500
+): Promise<{
+  id: string;
+  status: string;
+  output?: string[];
+  error?: string | null;
+}> {
+  for (let i = 0; i < maxChecks; i++) {
+    const result = await pollTryOnStatus(id);
+
+    if (result.status === "completed" || result.status === "failed") {
+      return result;
+    }
+
+    // Don't wait after the last check
+    if (i < maxChecks - 1) {
+      await new Promise((r) => setTimeout(r, intervalMs));
+    }
+  }
+
+  // Return the last status (still processing)
+  return pollTryOnStatus(id);
 }
 
 export async function waitForCompletion(
@@ -96,7 +135,7 @@ export async function runTryOnPipeline(
 
     onStep?.(i + 1, garmentUrls.length, label);
 
-    const { id, error } = await startTryOn(currentModelImage, imageUrl);
+    const { id, error } = await startTryOn(currentModelImage, imageUrl, category);
     if (error) throw new Error(error);
 
     currentModelImage = await waitForCompletion(id);

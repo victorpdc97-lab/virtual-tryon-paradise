@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pollTryOnStatus, startTryOn } from "@/lib/fashn";
+import { aggressivePoll, startTryOn } from "@/lib/fashn";
 import { pipelines } from "../route";
 
 function getStepLabel(category: string): string {
@@ -44,8 +44,9 @@ export async function GET(
       });
     }
 
-    // Poll current Fashn job
-    const result = await pollTryOnStatus(pipeline.currentFashnId);
+    // Aggressive polling: check Fashn multiple times within this request
+    // to detect completion faster and reduce inter-step latency
+    const result = await aggressivePoll(pipeline.currentFashnId);
 
     if (result.status === "failed") {
       pipeline.status = "failed";
@@ -64,9 +65,13 @@ export async function GET(
       const nextStepIndex = pipeline.currentStep + 1;
 
       if (nextStepIndex < pipeline.steps.length) {
-        // Start next step
+        // Start next step immediately with category hint
         const nextStep = pipeline.steps[nextStepIndex];
-        const { id: newId, error } = await startTryOn(outputUrl, nextStep.imageUrl);
+        const { id: newId, error } = await startTryOn(
+          outputUrl,
+          nextStep.imageUrl,
+          nextStep.category
+        );
 
         if (error) {
           pipeline.status = "failed";

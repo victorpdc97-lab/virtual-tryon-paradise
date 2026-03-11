@@ -19,7 +19,7 @@ export default function StudioPage() {
   const {
     lead,
     photoUrl,
-    photoBase64,
+    photoBlobUrl,
     getSelectedList,
     pipeline,
     setPipelineStatus,
@@ -94,7 +94,7 @@ export default function StudioPage() {
         } catch {
           // Network error, keep polling
         }
-      }, 3000);
+      }, 1500);
     },
     [setPipelineStatus, stopPolling]
   );
@@ -105,7 +105,7 @@ export default function StudioPage() {
 
   const handleTryOn = async () => {
     const items = getSelectedList();
-    if (!photoBase64 || items.length === 0) return;
+    if (!photoBlobUrl || items.length === 0) return;
 
     resetPipeline();
     setPipelineStatus({
@@ -120,7 +120,7 @@ export default function StudioPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          photoUrl: photoBase64,
+          photoUrl: photoBlobUrl,
           items: items.map((item) => ({
             category: item.category,
             imageUrl: item.image,

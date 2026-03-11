@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -26,13 +27,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert to base64 data URL (Fashn.ai accepts base64 directly)
-    const buffer = await file.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString("base64");
-    const mimeType = file.type;
-    const dataUrl = `data:${mimeType};base64,${base64}`;
+    // Upload to Vercel Blob for a public URL
+    const blob = await put(`tryon-photos/${Date.now()}-${file.name}`, file, {
+      access: "public",
+      addRandomSuffix: true,
+    });
 
-    return NextResponse.json({ url: dataUrl });
+    return NextResponse.json({ url: blob.url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(

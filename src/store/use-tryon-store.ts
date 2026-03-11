@@ -11,13 +11,13 @@ interface LeadInfo {
 interface TryOnStore {
   lead: LeadInfo | null;
   photoUrl: string | null;
-  photoBase64: string | null;
+  photoBlobUrl: string | null;
   photoFile: File | null;
   selectedItems: Record<GarmentCategory, Product | null>;
   pipeline: TryOnPipelineState;
 
   setLead: (lead: LeadInfo) => void;
-  setPhoto: (url: string, file: File, base64Url: string) => void;
+  setPhoto: (url: string, file: File, blobUrl: string) => void;
   clearPhoto: () => void;
   selectItem: (product: Product) => void;
   removeItem: (category: GarmentCategory) => void;
@@ -42,15 +42,15 @@ const initialPipeline: TryOnPipelineState = {
 export const useTryOnStore = create<TryOnStore>((set, get) => ({
   lead: null,
   photoUrl: null,
-  photoBase64: null,
+  photoBlobUrl: null,
   photoFile: null,
   selectedItems: { tops: null, bottoms: null, shoes: null },
   pipeline: { ...initialPipeline },
 
   setLead: (lead) => set({ lead }),
-  setPhoto: (url, file, base64Url) => set({ photoUrl: url, photoFile: file, photoBase64: base64Url }),
+  setPhoto: (url, file, blobUrl) => set({ photoUrl: url, photoFile: file, photoBlobUrl: blobUrl }),
   clearPhoto: () =>
-    set({ photoUrl: null, photoBase64: null, photoFile: null, pipeline: { ...initialPipeline } }),
+    set({ photoUrl: null, photoBlobUrl: null, photoFile: null, pipeline: { ...initialPipeline } }),
 
   selectItem: (product) =>
     set((state) => ({
