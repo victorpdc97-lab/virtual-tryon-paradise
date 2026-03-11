@@ -27,9 +27,9 @@ export async function loadCategoryMap(): Promise<void> {
 
   const categories = await res.json();
   const keywords: Record<GarmentCategory, string[]> = {
-    tops: ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped", "polo", "blazer", "colete", "sueter", "suéter", "fitness", "tech"],
+    tops: ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped", "polo", "blazer", "colete", "sueter", "suéter", "fitness", "tech", "oversize", "manga"],
     bottoms: ["calça", "calca", "short", "saia", "bermuda", "legging", "jeans"],
-    shoes: ["calçado", "calcado", "tênis", "tenis", "sapato", "sandal", "bota", "chinelo"],
+    shoes: ["calçado", "calcado", "tênis", "tenis", "sapato", "sandal", "bota", "chinelo", "alpargata"],
   };
 
   for (const cat of categories) {
@@ -45,20 +45,36 @@ export async function loadCategoryMap(): Promise<void> {
   categoryMapLoaded = true;
 }
 
+const TOP_RE = /camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|blazer|colete|sueter|suéter|fitness|tech|oversize|manga/i;
+const BOTTOM_RE = /calça|calca|short|saia|bermuda|legging|jeans/i;
+const SHOE_RE = /calçado|calcado|tênis|tenis|sapato|sandal|bota|chinelo|alpargata/i;
+
+function matchKeywords(text: string): GarmentCategory | null {
+  if (TOP_RE.test(text)) return "tops";
+  if (BOTTOM_RE.test(text)) return "bottoms";
+  if (SHOE_RE.test(text)) return "shoes";
+  return null;
+}
+
 function detectCategory(product: NuvemshopProduct): GarmentCategory | null {
+  // Check CATEGORY_MAP first
   for (const cat of product.categories) {
     if (CATEGORY_MAP[cat.id]) return CATEGORY_MAP[cat.id];
   }
 
+  // Check category names directly (handles categories not in the map)
+  for (const cat of product.categories) {
+    const catName = (cat.name?.pt || "").toLowerCase();
+    const match = matchKeywords(catName);
+    if (match) return match;
+  }
+
+  // Fallback: product name + description
   const name = (product.name?.pt || "").toLowerCase();
   const desc = (product.description?.pt || "").toLowerCase();
   const text = `${name} ${desc}`;
 
-  if (/camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|blazer|colete|sueter|suéter|fitness|tech/i.test(text)) return "tops";
-  if (/calça|calca|short|saia|bermuda|legging|jeans/i.test(text)) return "bottoms";
-  if (/calçado|calcado|tênis|tenis|sapato|sandal|bota|chinelo/i.test(text)) return "shoes";
-
-  return null;
+  return matchKeywords(text);
 }
 
 function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | null {
@@ -103,7 +119,7 @@ export async function getProducts(
         "Content-Type": "application/json",
         "User-Agent": "VirtualTryOn/1.0",
       },
-      next: { revalidate: 300 },
+      cache: "no-store",
     }
   );
 
