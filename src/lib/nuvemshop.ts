@@ -106,15 +106,9 @@ function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | n
   };
 }
 
-export async function getProducts(
-  filterCategory?: GarmentCategory,
-  page = 1,
-  perPage = 20
-): Promise<{ products: Product[]; hasMore: boolean }> {
-  await loadCategoryMap();
-
+async function fetchPage(apiPage: number, perPage: number): Promise<{ products: NuvemshopProduct[]; hasMore: boolean }> {
   const res = await fetch(
-    `${API_BASE}/products?page=${page}&per_page=${perPage}&published=true`,
+    `${API_BASE}/products?page=${apiPage}&per_page=${perPage}&published=true`,
     {
       headers: {
         Authentication: `bearer ${getToken()}`,
@@ -129,19 +123,69 @@ export async function getProducts(
     throw new Error(`Nuvemshop API error: ${res.status}`);
   }
 
-  const raw: NuvemshopProduct[] = await res.json();
+  const products: NuvemshopProduct[] = await res.json();
   const linkHeader = res.headers.get("Link") || "";
   const hasMore = linkHeader.includes('rel="next"');
 
-  const products: Product[] = [];
-  for (const p of raw) {
-    if (!p.images.length) continue;
-    const category = detectCategory(p);
-    if (!category) continue;
-    if (filterCategory && category !== filterCategory) continue;
-    const mapped = mapProduct(p, category);
-    if (mapped) products.push(mapped);
+  return { products, hasMore };
+}
+
+// Cache all filtered products in memory to avoid repeated API calls
+let cachedProducts: Product[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function loadAllProducts(): Promise<Product[]> {
+  if (cachedProducts && Date.now() - cacheTimestamp < CACHE_TTL) {
+    return cachedProducts;
   }
+
+  await loadCategoryMap();
+
+  const allProducts: Product[] = [];
+  let apiPage = 1;
+  let hasMore = true;
+  const PER_PAGE = 200; // Nuvemshop max
+  const MAX_PAGES = 10; // Safety limit
+
+  while (hasMore && apiPage <= MAX_PAGES) {
+    const result = await fetchPage(apiPage, PER_PAGE);
+
+    for (const p of result.products) {
+      if (!p.images?.length) continue;
+      const category = detectCategory(p);
+      if (!category) continue;
+      const mapped = mapProduct(p, category);
+      if (mapped) allProducts.push(mapped);
+    }
+
+    hasMore = result.hasMore;
+    apiPage++;
+  }
+
+  cachedProducts = allProducts;
+  cacheTimestamp = Date.now();
+
+  return allProducts;
+}
+
+export async function getProducts(
+  filterCategory?: GarmentCategory,
+  page = 1,
+  perPage = 24
+): Promise<{ products: Product[]; hasMore: boolean }> {
+  const allProducts = await loadAllProducts();
+
+  // Filter by category if needed
+  const filtered = filterCategory
+    ? allProducts.filter((p) => p.category === filterCategory)
+    : allProducts;
+
+  // Paginate
+  const start = (page - 1) * perPage;
+  const end = start + perPage;
+  const products = filtered.slice(start, end);
+  const hasMore = end < filtered.length;
 
   return { products, hasMore };
 }
