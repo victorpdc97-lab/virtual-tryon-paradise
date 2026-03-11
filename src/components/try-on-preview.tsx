@@ -1,7 +1,17 @@
 "use client";
 
-import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider";
+import dynamic from "next/dynamic";
 import { useTryOnStore } from "@/store/use-tryon-store";
+
+const ReactCompareSlider = dynamic(
+  () => import("react-compare-slider").then((mod) => mod.ReactCompareSlider),
+  { ssr: false }
+);
+
+const ReactCompareSliderImage = dynamic(
+  () => import("react-compare-slider").then((mod) => mod.ReactCompareSliderImage),
+  { ssr: false }
+);
 
 export function TryOnPreview() {
   const { photoUrl, pipeline } = useTryOnStore();

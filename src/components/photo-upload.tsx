@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import imageCompression from "browser-image-compression";
 import { useTryOnStore } from "@/store/use-tryon-store";
 
 export function PhotoUpload() {
@@ -19,7 +18,8 @@ export function PhotoUpload() {
       setUploading(true);
 
       try {
-        // Compress for Fashn API (max ~4MB for base64)
+        // Dynamic import to avoid SSR issues
+        const imageCompression = (await import("browser-image-compression")).default;
         const processedFile = await imageCompression(file, {
           maxSizeMB: 3,
           maxWidthOrHeight: 2048,
