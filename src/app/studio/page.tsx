@@ -14,6 +14,7 @@ export default function StudioPage() {
   const router = useRouter();
   const {
     photoUrl,
+    photoBase64,
     getSelectedList,
     pipeline,
     setPipelineStatus,
@@ -86,7 +87,7 @@ export default function StudioPage() {
 
   const handleTryOn = async () => {
     const items = getSelectedList();
-    if (!photoUrl || items.length === 0) return;
+    if (!photoBase64 || items.length === 0) return;
 
     resetPipeline();
     setPipelineStatus({
@@ -101,7 +102,7 @@ export default function StudioPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          photoUrl,
+          photoUrl: photoBase64,
           items: items.map((item) => ({
             category: item.category,
             imageUrl: item.image,

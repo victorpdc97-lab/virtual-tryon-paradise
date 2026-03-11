@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -27,16 +26,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const timestamp = Date.now();
-    const ext = file.type.split("/")[1] === "jpeg" ? "jpg" : file.type.split("/")[1];
-    const filename = `uploads/${timestamp}.${ext}`;
+    // Convert to base64 data URL (Fashn.ai accepts base64 directly)
+    const buffer = await file.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    const mimeType = file.type;
+    const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    const blob = await put(filename, file, {
-      access: "public",
-      contentType: file.type,
-    });
-
-    return NextResponse.json({ url: blob.url });
+    return NextResponse.json({ url: dataUrl });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(

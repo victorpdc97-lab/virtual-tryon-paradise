@@ -19,32 +19,23 @@ export function PhotoUpload() {
       setUploading(true);
 
       try {
-        // Compress if needed
-        let processedFile = file;
-        if (file.size > 4 * 1024 * 1024) {
-          processedFile = await imageCompression(file, {
-            maxSizeMB: 4,
-            maxWidthOrHeight: 2048,
-            useWebWorker: true,
-          });
-        }
-
-        // Upload
-        const formData = new FormData();
-        formData.append("photo", processedFile);
-
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
+        // Compress for Fashn API (max ~4MB for base64)
+        const processedFile = await imageCompression(file, {
+          maxSizeMB: 3,
+          maxWidthOrHeight: 2048,
+          useWebWorker: true,
         });
 
-        const data = await res.json();
+        // Create local preview URL + base64 for API
+        const previewUrl = URL.createObjectURL(processedFile);
+        const buffer = await processedFile.arrayBuffer();
+        const base64 = btoa(
+          new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+        );
+        const dataUrl = `data:${processedFile.type};base64,${base64}`;
 
-        if (!res.ok) {
-          throw new Error(data.error || "Erro no upload");
-        }
-
-        setPhoto(data.url, processedFile);
+        // Store preview URL for display, dataUrl for API calls
+        setPhoto(previewUrl, processedFile, dataUrl);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao processar foto");
       } finally {
