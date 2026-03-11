@@ -17,6 +17,7 @@ import { MobileLookBar } from "@/components/mobile-look-bar";
 export default function StudioPage() {
   const router = useRouter();
   const {
+    lead,
     photoUrl,
     photoBase64,
     getSelectedList,
@@ -127,6 +128,7 @@ export default function StudioPage() {
             productName: item.name,
           })),
           turnstileToken: turnstileToken || undefined,
+          leadEmail: lead?.email || undefined,
         }),
       });
 

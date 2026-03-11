@@ -3,6 +3,7 @@ import { startTryOn } from "@/lib/fashn";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { trackTryOn } from "@/lib/analytics";
+import { incrementLeadTryOn } from "@/lib/leads";
 
 interface TryOnRequestBody {
   photoUrl: string;
@@ -13,6 +14,7 @@ interface TryOnRequestBody {
     productName?: string;
   }>;
   turnstileToken?: string;
+  leadEmail?: string;
 }
 
 // Stores pipeline state in memory (per-process; fine for serverless)
@@ -87,6 +89,11 @@ export async function POST(req: NextRequest) {
         .filter((item) => item.productId)
         .map((item) => ({ id: item.productId!, name: item.productName || "" }))
     );
+
+    // Track lead usage
+    if (body.leadEmail) {
+      incrementLeadTryOn(body.leadEmail);
+    }
 
     const pipelineId = `pipeline_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 

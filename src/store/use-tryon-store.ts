@@ -3,13 +3,20 @@
 import { create } from "zustand";
 import type { Product, GarmentCategory, TryOnPipelineState } from "@/types";
 
+interface LeadInfo {
+  email: string;
+  phone: string;
+}
+
 interface TryOnStore {
+  lead: LeadInfo | null;
   photoUrl: string | null;
   photoBase64: string | null;
   photoFile: File | null;
   selectedItems: Record<GarmentCategory, Product | null>;
   pipeline: TryOnPipelineState;
 
+  setLead: (lead: LeadInfo) => void;
   setPhoto: (url: string, file: File, base64Url: string) => void;
   clearPhoto: () => void;
   selectItem: (product: Product) => void;
@@ -33,12 +40,14 @@ const initialPipeline: TryOnPipelineState = {
 };
 
 export const useTryOnStore = create<TryOnStore>((set, get) => ({
+  lead: null,
   photoUrl: null,
   photoBase64: null,
   photoFile: null,
   selectedItems: { tops: null, bottoms: null, shoes: null },
   pipeline: { ...initialPipeline },
 
+  setLead: (lead) => set({ lead }),
   setPhoto: (url, file, base64Url) => set({ photoUrl: url, photoFile: file, photoBase64: base64Url }),
   clearPhoto: () =>
     set({ photoUrl: null, photoBase64: null, photoFile: null, pipeline: { ...initialPipeline } }),
