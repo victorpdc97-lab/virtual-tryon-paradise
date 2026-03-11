@@ -27,7 +27,7 @@ export async function loadCategoryMap(): Promise<void> {
 
   const categories = await res.json();
   const keywords: Record<GarmentCategory, string[]> = {
-    tops: ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped"],
+    tops: ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped", "polo", "blazer", "colete", "sueter", "suéter", "fitness", "tech"],
     bottoms: ["calça", "calca", "short", "saia", "bermuda", "legging", "jeans"],
     shoes: ["calçado", "calcado", "tênis", "tenis", "sapato", "sandal", "bota", "chinelo"],
   };
@@ -54,7 +54,7 @@ function detectCategory(product: NuvemshopProduct): GarmentCategory | null {
   const desc = (product.description?.pt || "").toLowerCase();
   const text = `${name} ${desc}`;
 
-  if (/camis|blus|top|moleton|jaqueta|casaco|regata|cropped/i.test(text)) return "tops";
+  if (/camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|blazer|colete|sueter|suéter|fitness|tech/i.test(text)) return "tops";
   if (/calça|calca|short|saia|bermuda|legging|jeans/i.test(text)) return "bottoms";
   if (/calçado|calcado|tênis|tenis|sapato|sandal|bota|chinelo/i.test(text)) return "shoes";
 
@@ -62,8 +62,17 @@ function detectCategory(product: NuvemshopProduct): GarmentCategory | null {
 }
 
 function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | null {
-  const price = parseFloat(p.price) || 0;
-  const promoPrice = p.promotional_price ? parseFloat(p.promotional_price) : null;
+  // Price can be null at product level — fall back to first variant
+  let price = p.price ? parseFloat(p.price) : 0;
+  let promoPrice = p.promotional_price ? parseFloat(p.promotional_price) : null;
+
+  if (!price && p.variants?.length) {
+    const v = p.variants[0];
+    price = v.price ? parseFloat(v.price) : 0;
+    if (!promoPrice && v.promotional_price) {
+      promoPrice = parseFloat(v.promotional_price);
+    }
+  }
 
   // Skip products with no valid price
   if (!price && (!promoPrice || promoPrice <= 0)) return null;
@@ -71,8 +80,8 @@ function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | n
   return {
     id: p.id,
     name: p.name?.pt || "",
-    price,
-    promoPrice: promoPrice && promoPrice > 0 ? promoPrice : null,
+    price: price || (promoPrice ?? 0),
+    promoPrice: promoPrice && promoPrice > 0 && promoPrice < price ? promoPrice : null,
     image: p.images[0]?.src || "",
     category,
     nuvemshopUrl: `https://paradisemultimarcas.lojavirtualnuvem.com.br/productos/${p.id}`,

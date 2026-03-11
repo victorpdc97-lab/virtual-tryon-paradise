@@ -2,13 +2,14 @@ export interface NuvemshopProduct {
   id: number;
   name: { pt: string };
   description: { pt: string };
-  price: string;
+  price: string | null;
   promotional_price: string | null;
   images: Array<{ id: number; src: string }>;
   categories: Array<{ id: number; name: { pt: string } }>;
   variants: Array<{
     id: number;
     price: string;
+    promotional_price: string | null;
     stock: number | null;
     values: Array<{ pt: string }>;
   }>;
