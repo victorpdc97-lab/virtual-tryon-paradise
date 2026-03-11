@@ -111,7 +111,7 @@ function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | n
 
 async function fetchPage(apiPage: number, perPage: number): Promise<{ products: NuvemshopProduct[]; hasMore: boolean }> {
   const res = await fetch(
-    `${API_BASE}/products?page=${apiPage}&per_page=${perPage}&published=true`,
+    `${API_BASE}/products?page=${apiPage}&per_page=${perPage}&published=true&sort_by=best-selling`,
     {
       headers: {
         Authentication: `bearer ${getToken()}`,

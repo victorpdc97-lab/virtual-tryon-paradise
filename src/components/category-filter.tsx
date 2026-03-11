@@ -9,8 +9,8 @@ interface CategoryFilterProps {
 
 const CATEGORIES: Array<{ id: GarmentCategory | "all"; label: string; icon: string }> = [
   { id: "all", label: "Todos", icon: "grid" },
-  { id: "tops", label: "Camisetas", icon: "tops" },
-  { id: "bottoms", label: "Calças", icon: "bottoms" },
+  { id: "tops", label: "Parte de Cima", icon: "tops" },
+  { id: "bottoms", label: "Parte de Baixo", icon: "bottoms" },
   { id: "shoes", label: "Calçados", icon: "shoes" },
 ];
 
