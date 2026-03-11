@@ -3,16 +3,6 @@
 import { useTryOnStore } from "@/store/use-tryon-store";
 import type { Product } from "@/types";
 
-const STORE_DOMAIN = "www.useparadise.com.br";
-
-function buildCartUrl(items: Product[]): string {
-  const variants = items
-    .filter((item) => item.variantId)
-    .map((item) => `${item.variantId}:1`)
-    .join(",");
-  return `https://${STORE_DOMAIN}/cart/${variants}`;
-}
-
 function trackBuy(item: Product) {
   fetch("/api/track-buy", {
     method: "POST",
@@ -39,17 +29,14 @@ export function BuyLookCta() {
 
   const handleBuyAll = () => {
     items.forEach(trackBuy);
-    const cartUrl = buildCartUrl(items);
-    window.open(cartUrl, "_blank");
+    for (const item of items) {
+      window.open(item.nuvemshopUrl, "_blank");
+    }
   };
 
   const handleBuySingle = (item: Product) => {
     trackBuy(item);
-    if (item.variantId) {
-      window.open(`https://${STORE_DOMAIN}/cart/${item.variantId}:1`, "_blank");
-    } else {
-      window.open(item.nuvemshopUrl, "_blank");
-    }
+    window.open(item.nuvemshopUrl, "_blank");
   };
 
   const handleShareWhatsApp = () => {
@@ -117,7 +104,7 @@ export function BuyLookCta() {
           onClick={handleBuyAll}
           className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm text-center hover:from-teal-400 hover:to-teal-300 transition-all"
         >
-          Adicionar ao Carrinho
+          Comprar Tudo
         </button>
         <button
           onClick={handleNewLook}
