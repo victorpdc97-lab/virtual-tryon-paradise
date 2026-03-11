@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const result = await getProducts(category || undefined, page);
+    const search = searchParams.get("search") || undefined;
+    const result = await getProducts(category || undefined, page, 24, search);
 
     return NextResponse.json(result);
   } catch (error) {

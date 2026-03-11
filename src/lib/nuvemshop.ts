@@ -47,7 +47,7 @@ export async function loadCategoryMap(): Promise<void> {
 }
 
 // Blacklist: produtos que NÃO são roupas/calçados (acessórios, cosméticos, etc.)
-const BLACKLIST_RE = /spray|impermeabilizante|pomada|prendedor|cera|gel|shampoo|condicionador|perfume|desodorante|hidratante|protetor|creme|óleo|oleo|escova|pente|acessório|acessorio|carteira|bolsa|mochila|necessaire|cinto|colar|pulseira|anel|brinco|óculos|oculos|relógio|relogio|boné|bone|gorro|chapéu|chapeu|meia|cueca|luva|gravata|lenço|lenco|toalha|máscara|mascara|limpeza|removedor|cola|graxa|tinta|cadarço|cadarco|palmilha|kit\b|combo\b|sunga|quadro|chaveiro|pochete|faixa|tiara|presilha|piercing|corrente|pingente|aliança|alianca|broche|cachecol|loção|locao|sabonete|balm|serum|sérum|talco|mousse|esfoliante|tônico|tonico|esmalte|batom|maquiagem|unha|depilação|depilacao|barbear|navalha|gilete|renova solado|brilho expresso|limpa couro|muss plus|solado|lustro|engraxe|polimento|restaurador|selante|condicionador de couro/i;
+const BLACKLIST_RE = /spray|impermeabilizante|pomada|prendedor|cera|gel|shampoo|condicionador|perfume|desodorante|hidratante|protetor|creme|óleo|oleo|escova|pente|acessório|acessorio|carteira|bolsa|mochila|necessaire|cinto|colar|pulseira|anel|brinco|óculos|oculos|relógio|relogio|boné|bone|gorro|chapéu|chapeu|meia|cueca|luva|gravata|lenço|lenco|toalha|máscara|mascara|limpeza|removedor|cola|graxa|tinta|cadarço|cadarco|palmilha|kit\b|combo\b|sunga|quadro|chaveiro|pochete|faixa|tiara|presilha|piercing|corrente|pingente|aliança|alianca|broche|cachecol|loção|locao|sabonete|balm|serum|sérum|talco|mousse|esfoliante|tônico|tonico|esmalte|batom|maquiagem|unha|depilação|depilacao|barbear|navalha|gilete|renova solado|brilho expresso|limpa couro|limpa tenis|limpa tênis|muss plus|solado|lustro|engraxe|polimento|restaurador|selante|condicionador de couro|case cap|vale presente|frete|outlet\b|taxa/i;
 
 const TOP_RE = /camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|blazer|colete|sueter|suéter|fitness|tech|oversize|manga/i;
 const SHOE_RE = /calçado|calcado|tênis|tenis|sapato|sandal|bota|chinelo|alpargata/i;
@@ -180,14 +180,21 @@ async function loadAllProducts(): Promise<Product[]> {
 export async function getProducts(
   filterCategory?: GarmentCategory,
   page = 1,
-  perPage = 24
+  perPage = 24,
+  search?: string
 ): Promise<{ products: Product[]; hasMore: boolean }> {
   const allProducts = await loadAllProducts();
 
   // Filter by category if needed
-  const filtered = filterCategory
+  let filtered = filterCategory
     ? allProducts.filter((p) => p.category === filterCategory)
     : allProducts;
+
+  // Filter by search term
+  if (search) {
+    const term = search.toLowerCase().trim();
+    filtered = filtered.filter((p) => p.name.toLowerCase().includes(term));
+  }
 
   // Paginate
   const start = (page - 1) * perPage;
