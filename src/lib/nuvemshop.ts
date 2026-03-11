@@ -106,6 +106,7 @@ function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | n
     image: p.images[0]?.src || "",
     category,
     nuvemshopUrl: p.canonical_url || `https://www.useparadise.com.br/produtos/${p.id}`,
+    variantId: p.variants?.[0]?.id || null,
   };
 }
 

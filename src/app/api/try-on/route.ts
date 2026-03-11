@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { startTryOn } from "@/lib/fashn";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { trackTryOn } from "@/lib/analytics";
 
 interface TryOnRequestBody {
   photoUrl: string;
   items: Array<{
     category: string;
     imageUrl: string;
+    productId?: number;
+    productName?: string;
   }>;
   turnstileToken?: string;
 }
@@ -77,6 +80,13 @@ export async function POST(req: NextRequest) {
     if (error) {
       return NextResponse.json({ error }, { status: 500 });
     }
+
+    // Track analytics
+    trackTryOn(
+      body.items
+        .filter((item) => item.productId)
+        .map((item) => ({ id: item.productId!, name: item.productName || "" }))
+    );
 
     const pipelineId = `pipeline_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 

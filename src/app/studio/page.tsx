@@ -109,6 +109,8 @@ export default function StudioPage() {
           items: items.map((item) => ({
             category: item.category,
             imageUrl: item.image,
+            productId: item.id,
+            productName: item.name,
           })),
           turnstileToken: turnstileToken || undefined,
         }),

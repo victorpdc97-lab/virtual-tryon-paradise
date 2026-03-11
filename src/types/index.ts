@@ -24,6 +24,7 @@ export interface Product {
   image: string;
   category: GarmentCategory;
   nuvemshopUrl: string;
+  variantId: number | null;
 }
 
 export type GarmentCategory = "tops" | "bottoms" | "shoes";
