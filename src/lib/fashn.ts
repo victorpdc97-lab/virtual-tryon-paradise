@@ -28,7 +28,7 @@ export async function startTryOn(
       Authorization: `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model_name: "tryon-v1.6",
+      model_name: "tryon-max",
       inputs: {
         model_image: modelImageUrl,
         garment_image: garmentImageUrl,

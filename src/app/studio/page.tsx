@@ -163,6 +163,7 @@ export default function StudioPage() {
 
   const isProcessing = pipeline.status === "processing";
   const isCompleted = pipeline.status === "completed";
+  const isFailed = pipeline.status === "failed";
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -196,6 +197,19 @@ export default function StudioPage() {
           <div className="lg:col-span-4 space-y-4">
             <PhotoUpload />
             {isProcessing && <TryOnProgress />}
+            {isFailed && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
+                <p className="text-red-400 text-sm font-medium">
+                  {pipeline.error || "Erro no processamento"}
+                </p>
+                <button
+                  onClick={resetPipeline}
+                  className="mt-2 text-xs text-white/50 hover:text-white/80 underline"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            )}
             {isCompleted && (
               <>
                 <TryOnPreview />

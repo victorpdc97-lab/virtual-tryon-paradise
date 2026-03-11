@@ -29,23 +29,36 @@ export function PhotoUpload() {
         // Create local preview URL
         const previewUrl = URL.createObjectURL(processedFile);
 
-        // Upload to Vercel Blob for a public URL (instead of base64)
-        const formData = new FormData();
-        formData.append("photo", processedFile);
+        let apiUrl: string;
 
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+        try {
+          // Try uploading to Vercel Blob for a public URL
+          const formData = new FormData();
+          formData.append("photo", processedFile);
 
-        const data = await res.json();
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-        if (!res.ok) {
-          throw new Error(data.error || "Erro ao fazer upload");
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Upload falhou");
+          }
+
+          apiUrl = data.url;
+        } catch {
+          // Fallback: convert to base64 data URL if Blob upload fails
+          const buffer = await processedFile.arrayBuffer();
+          const base64 = btoa(
+            new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+          );
+          apiUrl = `data:${processedFile.type};base64,${base64}`;
         }
 
-        // Store preview URL for display, blob URL for API calls
-        setPhoto(previewUrl, processedFile, data.url);
+        // Store preview URL for display, API URL (blob or base64) for try-on calls
+        setPhoto(previewUrl, processedFile, apiUrl);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao processar foto");
       } finally {
