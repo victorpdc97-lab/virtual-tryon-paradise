@@ -19,8 +19,8 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   };
 
-  const displayPrice = product.promoPrice ?? product.price;
-  const hasPromo = product.promoPrice !== null && product.promoPrice < product.price;
+  const displayPrice = product.promoPrice ?? product.price ?? 0;
+  const hasPromo = product.promoPrice !== null && product.promoPrice < (product.price ?? 0);
 
   return (
     <button
@@ -52,11 +52,11 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="text-white/80 text-sm font-medium truncate">{product.name}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-teal-400 font-semibold text-sm">
-            R$ {displayPrice.toFixed(2).replace(".", ",")}
+            R$ {(displayPrice || 0).toFixed(2).replace(".", ",")}
           </span>
           {hasPromo && (
             <span className="text-white/30 text-xs line-through">
-              R$ {product.price.toFixed(2).replace(".", ",")}
+              R$ {(product.price || 0).toFixed(2).replace(".", ",")}
             </span>
           )}
         </div>

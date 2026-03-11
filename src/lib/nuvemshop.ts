@@ -61,12 +61,18 @@ function detectCategory(product: NuvemshopProduct): GarmentCategory | null {
   return null;
 }
 
-function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product {
+function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | null {
+  const price = parseFloat(p.price) || 0;
+  const promoPrice = p.promotional_price ? parseFloat(p.promotional_price) : null;
+
+  // Skip products with no valid price
+  if (!price && (!promoPrice || promoPrice <= 0)) return null;
+
   return {
     id: p.id,
     name: p.name?.pt || "",
-    price: parseFloat(p.price),
-    promoPrice: p.promotional_price ? parseFloat(p.promotional_price) : null,
+    price,
+    promoPrice: promoPrice && promoPrice > 0 ? promoPrice : null,
     image: p.images[0]?.src || "",
     category,
     nuvemshopUrl: `https://paradisemultimarcas.lojavirtualnuvem.com.br/productos/${p.id}`,
@@ -106,7 +112,8 @@ export async function getProducts(
     const category = detectCategory(p);
     if (!category) continue;
     if (filterCategory && category !== filterCategory) continue;
-    products.push(mapProduct(p, category));
+    const mapped = mapProduct(p, category);
+    if (mapped) products.push(mapped);
   }
 
   return { products, hasMore };

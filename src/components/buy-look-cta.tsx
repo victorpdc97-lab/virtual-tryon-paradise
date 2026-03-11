@@ -9,7 +9,7 @@ export function BuyLookCta() {
   if (pipeline.status !== "completed" || items.length === 0) return null;
 
   const totalPrice = items.reduce(
-    (sum, item) => sum + (item.promoPrice ?? item.price),
+    (sum, item) => sum + (item.promoPrice ?? item.price ?? 0),
     0
   );
 
@@ -27,14 +27,14 @@ export function BuyLookCta() {
           <div key={item.id} className="flex items-center justify-between text-sm">
             <span className="text-white/70">{item.name}</span>
             <span className="text-teal-400">
-              R$ {(item.promoPrice ?? item.price).toFixed(2).replace(".", ",")}
+              R$ {(item.promoPrice ?? item.price ?? 0).toFixed(2).replace(".", ",")}
             </span>
           </div>
         ))}
         <div className="border-t border-white/10 pt-2 flex justify-between">
           <span className="text-white font-medium">Total</span>
           <span className="text-teal-400 font-bold text-lg">
-            R$ {totalPrice.toFixed(2).replace(".", ",")}
+            R$ {(totalPrice || 0).toFixed(2).replace(".", ",")}
           </span>
         </div>
       </div>

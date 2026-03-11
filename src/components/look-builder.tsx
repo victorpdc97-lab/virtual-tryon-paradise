@@ -20,7 +20,7 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
 
   const totalPrice = Object.values(selectedItems)
     .filter(Boolean)
-    .reduce((sum, item) => sum + (item!.promoPrice ?? item!.price), 0);
+    .reduce((sum, item) => sum + (item!.promoPrice ?? item!.price ?? 0), 0);
 
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4">
@@ -56,7 +56,7 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
                   <div className="flex-1 min-w-0">
                     <p className="text-white/80 text-sm truncate">{item.name}</p>
                     <p className="text-teal-400 text-xs">
-                      R$ {(item.promoPrice ?? item.price).toFixed(2).replace(".", ",")}
+                      R$ {(item.promoPrice ?? item.price ?? 0).toFixed(2).replace(".", ",")}
                     </p>
                   </div>
                   <button
@@ -84,7 +84,7 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
           <div className="flex justify-between text-sm mb-4">
             <span className="text-white/40">Total do look</span>
             <span className="text-white font-semibold">
-              R$ {totalPrice.toFixed(2).replace(".", ",")}
+              R$ {(totalPrice || 0).toFixed(2).replace(".", ",")}
             </span>
           </div>
 
