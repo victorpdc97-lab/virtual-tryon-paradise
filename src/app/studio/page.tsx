@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import { PhotoUpload } from "@/components/photo-upload";
@@ -9,6 +9,7 @@ import { LookBuilder } from "@/components/look-builder";
 import { TryOnProgress } from "@/components/try-on-progress";
 import { TryOnPreview } from "@/components/try-on-preview";
 import { BuyLookCta } from "@/components/buy-look-cta";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 
 export default function StudioPage() {
   const router = useRouter();
@@ -21,6 +22,8 @@ export default function StudioPage() {
     resetPipeline,
   } = useTryOnStore();
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     if (!photoUrl) {
@@ -107,6 +110,7 @@ export default function StudioPage() {
             category: item.category,
             imageUrl: item.image,
           })),
+          turnstileToken: turnstileToken || undefined,
         }),
       });
 
@@ -127,6 +131,7 @@ export default function StudioPage() {
         stepLabel: data.stepLabel,
       });
 
+      if (data.remaining !== undefined) setRemaining(data.remaining);
       startPolling(data.pipelineId);
     } catch {
       setPipelineStatus({
@@ -181,11 +186,19 @@ export default function StudioPage() {
 
           {/* Right: Look Builder */}
           <div className="lg:col-span-3">
-            <div className="lg:sticky lg:top-6">
+            <div className="lg:sticky lg:top-6 space-y-3">
               <LookBuilder
                 onTryOn={handleTryOn}
                 disabled={isProcessing || !photoUrl}
               />
+              {remaining !== null && remaining <= 2 && (
+                <p className="text-center text-xs text-amber-400/80">
+                  {remaining === 0
+                    ? "Você atingiu o limite diário de experimentações"
+                    : `${remaining} experimentação${remaining > 1 ? "ões" : ""} restante${remaining > 1 ? "s" : ""} hoje`}
+                </p>
+              )}
+              <TurnstileWidget onToken={setTurnstileToken} />
             </div>
           </div>
         </div>

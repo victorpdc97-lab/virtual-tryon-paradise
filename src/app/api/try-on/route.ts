@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { startTryOn } from "@/lib/fashn";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 interface TryOnRequestBody {
   photoUrl: string;
@@ -7,6 +9,7 @@ interface TryOnRequestBody {
     category: string;
     imageUrl: string;
   }>;
+  turnstileToken?: string;
 }
 
 // Stores pipeline state in memory (per-process; fine for serverless)
@@ -25,6 +28,17 @@ const pipelines = new Map<
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+
+    // Rate limiting: check per-minute + daily limits
+    const rateCheck = checkRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: rateCheck.error },
+        { status: 429 }
+      );
+    }
+
     const body: TryOnRequestBody = await req.json();
 
     if (!body.photoUrl || !body.items?.length) {
@@ -32,6 +46,23 @@ export async function POST(req: NextRequest) {
         { error: "photoUrl e items são obrigatórios" },
         { status: 400 }
       );
+    }
+
+    // Turnstile CAPTCHA verification
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      if (!body.turnstileToken) {
+        return NextResponse.json(
+          { error: "Verificação de segurança necessária" },
+          { status: 403 }
+        );
+      }
+      const valid = await verifyTurnstile(body.turnstileToken, ip);
+      if (!valid) {
+        return NextResponse.json(
+          { error: "Verificação de segurança falhou. Tente novamente." },
+          { status: 403 }
+        );
+      }
     }
 
     const categoryOrder = ["tops", "bottoms", "shoes"];
@@ -72,6 +103,7 @@ export async function POST(req: NextRequest) {
       currentStep: 1,
       totalSteps: sortedItems.length,
       stepLabel: getStepLabel(first.category),
+      remaining: rateCheck.remaining,
     });
   } catch (error) {
     console.error("Try-on error:", error);
