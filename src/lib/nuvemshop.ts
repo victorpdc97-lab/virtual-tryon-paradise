@@ -46,6 +46,9 @@ export async function loadCategoryMap(): Promise<void> {
   categoryMapLoaded = true;
 }
 
+// Blacklist: produtos que NÃO são roupas/calçados (acessórios, cosméticos, etc.)
+const BLACKLIST_RE = /spray|impermeabilizante|pomada|prendedor|cera|gel|shampoo|condicionador|perfume|desodorante|hidratante|protetor|creme|óleo|oleo|escova|pente|acessório|acessorio|carteira|bolsa|mochila|necessaire|cinto|colar|pulseira|anel|brinco|óculos|oculos|relógio|relogio|boné|bone|gorro|chapéu|chapeu|meia|cueca|luva|gravata|lenço|lenco|toalha|máscara|mascara|limpeza|removedor|cola|graxa|tinta|cadarço|cadarco|palmilha|kit\b|combo\b|sunga|quadro|chaveiro|pochete|faixa|tiara|presilha|piercing|corrente|pingente|aliança|alianca|broche|cachecol|loção|locao|sabonete|balm|serum|sérum|talco|mousse|esfoliante|tônico|tonico|esmalte|batom|maquiagem|unha|depilação|depilacao|barbear|navalha|gilete/i;
+
 const TOP_RE = /camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|blazer|colete|sueter|suéter|fitness|tech|oversize|manga/i;
 const SHOE_RE = /calçado|calcado|tênis|tenis|sapato|sandal|bota|chinelo|alpargata/i;
 const BOTTOM_RE = /calça|calca|short|saia|bermuda|legging|jeans/i;
@@ -153,6 +156,11 @@ async function loadAllProducts(): Promise<Product[]> {
 
     for (const p of result.products) {
       if (!p.images?.length) continue;
+
+      // Excluir produtos que não são roupas/calçados (acessórios, cosméticos, etc.)
+      const productName = (p.name?.pt || "").toLowerCase();
+      if (BLACKLIST_RE.test(productName)) continue;
+
       const category = detectCategory(p);
       if (!category) continue;
       const mapped = mapProduct(p, category);
