@@ -6,6 +6,7 @@ export interface NuvemshopProduct {
   promotional_price: string | null;
   images: Array<{ id: number; src: string }>;
   categories: Array<{ id: number; name: { pt: string } }>;
+  canonical_url?: string;
   variants: Array<{
     id: number;
     price: string;

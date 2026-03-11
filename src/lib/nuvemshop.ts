@@ -105,7 +105,7 @@ function mapProduct(p: NuvemshopProduct, category: GarmentCategory): Product | n
     promoPrice: promoPrice && promoPrice > 0 && promoPrice < price ? promoPrice : null,
     image: p.images[0]?.src || "",
     category,
-    nuvemshopUrl: `https://paradisemultimarcas.lojavirtualnuvem.com.br/productos/${p.id}`,
+    nuvemshopUrl: p.canonical_url || `https://www.useparadise.com.br/produtos/${p.id}`,
   };
 }
 
