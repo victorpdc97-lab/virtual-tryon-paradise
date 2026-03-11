@@ -31,8 +31,7 @@ export async function startTryOn(
       model_name: "tryon-max",
       inputs: {
         model_image: modelImageUrl,
-        garment_image: garmentImageUrl,
-        category: category ? mapCategory(category) : "auto",
+        product_image: garmentImageUrl,
         output_format: "jpeg",
         num_images: 1,
       },

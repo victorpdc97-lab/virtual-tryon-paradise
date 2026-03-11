@@ -123,9 +123,10 @@ export async function POST(req: NextRequest) {
       remaining: rateCheck.remaining,
     });
   } catch (error) {
-    console.error("Try-on error:", error);
+    const message = error instanceof Error ? error.message : "Erro desconhecido";
+    console.error("Try-on error:", message);
     return NextResponse.json(
-      { error: "Erro ao iniciar try-on" },
+      { error: message },
       { status: 500 }
     );
   }
