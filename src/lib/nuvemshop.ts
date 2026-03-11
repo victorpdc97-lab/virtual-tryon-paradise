@@ -26,17 +26,18 @@ export async function loadCategoryMap(): Promise<void> {
   if (!res.ok) return;
 
   const categories = await res.json();
-  const keywords: Record<GarmentCategory, string[]> = {
-    tops: ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped", "polo", "blazer", "colete", "sueter", "suéter", "fitness", "tech", "oversize", "manga"],
-    bottoms: ["calça", "calca", "short", "saia", "bermuda", "legging", "jeans"],
-    shoes: ["calçado", "calcado", "tênis", "tenis", "sapato", "sandal", "bota", "chinelo", "alpargata"],
-  };
+  // Order matters: shoes before bottoms (since "calçado" contains "calça")
+  const orderedKeywords: Array<[GarmentCategory, string[]]> = [
+    ["tops", ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped", "polo", "blazer", "colete", "sueter", "suéter", "fitness", "tech", "oversize", "manga"]],
+    ["shoes", ["calçado", "calcado", "tênis", "tenis", "sapato", "sandal", "bota", "chinelo", "alpargata"]],
+    ["bottoms", ["calça", "calca", "short", "saia", "bermuda", "legging", "jeans"]],
+  ];
 
   for (const cat of categories) {
     const name = (cat.name?.pt || "").toLowerCase();
-    for (const [garmentCat, kws] of Object.entries(keywords)) {
+    for (const [garmentCat, kws] of orderedKeywords) {
       if (kws.some((kw) => name.includes(kw))) {
-        CATEGORY_MAP[cat.id] = garmentCat as GarmentCategory;
+        CATEGORY_MAP[cat.id] = garmentCat;
         break;
       }
     }
@@ -46,13 +47,14 @@ export async function loadCategoryMap(): Promise<void> {
 }
 
 const TOP_RE = /camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|blazer|colete|sueter|suéter|fitness|tech|oversize|manga/i;
-const BOTTOM_RE = /calça|calca|short|saia|bermuda|legging|jeans/i;
 const SHOE_RE = /calçado|calcado|tênis|tenis|sapato|sandal|bota|chinelo|alpargata/i;
+const BOTTOM_RE = /calça|calca|short|saia|bermuda|legging|jeans/i;
 
 function matchKeywords(text: string): GarmentCategory | null {
   if (TOP_RE.test(text)) return "tops";
-  if (BOTTOM_RE.test(text)) return "bottoms";
+  // Check shoes BEFORE bottoms — "calçados" contains "calça"
   if (SHOE_RE.test(text)) return "shoes";
+  if (BOTTOM_RE.test(text)) return "bottoms";
   return null;
 }
 
