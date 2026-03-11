@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #0a0a0a;
+  --color-foreground: #ededed;
+  --font-sans: var(--font-dm-sans);
+  --color-teal-400: #0abab5;
+  --color-teal-500: #099e9a;
+  --color-teal-300: #0eded8;
+}
+
+body {
+  background: #0a0a0a;
+  color: #ededed;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
