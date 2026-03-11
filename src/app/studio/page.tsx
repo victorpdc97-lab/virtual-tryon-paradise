@@ -10,6 +10,9 @@ import { TryOnProgress } from "@/components/try-on-progress";
 import { TryOnPreview } from "@/components/try-on-preview";
 import { BuyLookCta } from "@/components/buy-look-cta";
 import { TurnstileWidget } from "@/components/turnstile-widget";
+import { Onboarding } from "@/components/onboarding";
+import { Celebration } from "@/components/celebration";
+import { MobileLookBar } from "@/components/mobile-look-bar";
 
 export default function StudioPage() {
   const router = useRouter();
@@ -24,12 +27,23 @@ export default function StudioPage() {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const prevStatusRef = useRef(pipeline.status);
 
   useEffect(() => {
     if (!photoUrl) {
       router.push("/");
     }
   }, [photoUrl, router]);
+
+  // Trigger celebration when status changes to completed
+  useEffect(() => {
+    if (prevStatusRef.current !== "completed" && pipeline.status === "completed") {
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 3500);
+    }
+    prevStatusRef.current = pipeline.status;
+  }, [pipeline.status]);
 
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
@@ -150,26 +164,33 @@ export default function StudioPage() {
 
   return (
     <main className="min-h-screen flex flex-col">
+      {/* Onboarding (first visit only) */}
+      <Onboarding />
+
+      {/* Celebration confetti */}
+      {showCelebration && <Celebration />}
+
       {/* Header */}
-      <header className="border-b border-white/5 px-6 py-4">
+      <header className="border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-3"
+            className="flex items-center gap-2 sm:gap-3"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-black font-bold text-sm">
               P
             </div>
-            <span className="text-white/80 font-semibold">Paradise</span>
-            <span className="text-white/20 text-sm">Studio</span>
+            <span className="text-white/80 font-semibold text-sm sm:text-base">Paradise</span>
+            <span className="text-white/20 text-xs sm:text-sm">Studio</span>
           </button>
         </div>
       </header>
 
-      {/* Studio Layout */}
-      <div className="flex-1 max-w-7xl mx-auto w-full p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: Photo + Result */}
+      {/* Studio Layout - Desktop: 3 columns, Mobile: stacked */}
+      <div className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 pb-24 lg:pb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+
+          {/* Photo + Result — full width on mobile, left col on desktop */}
           <div className="lg:col-span-4 space-y-4">
             <PhotoUpload />
             {isProcessing && <TryOnProgress />}
@@ -181,13 +202,13 @@ export default function StudioPage() {
             )}
           </div>
 
-          {/* Center: Catalog */}
+          {/* Catalog — full width on mobile, center on desktop */}
           <div className="lg:col-span-5">
             <ProductCatalog />
           </div>
 
-          {/* Right: Look Builder */}
-          <div className="lg:col-span-3">
+          {/* Look Builder — hidden on mobile (replaced by floating bar), right col on desktop */}
+          <div className="hidden lg:block lg:col-span-3">
             <div className="lg:sticky lg:top-6 space-y-3">
               <LookBuilder
                 onTryOn={handleTryOn}
@@ -204,6 +225,15 @@ export default function StudioPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Mobile floating look bar */}
+      <MobileLookBar
+        onTryOn={handleTryOn}
+        disabled={isProcessing || !photoUrl}
+      />
+      <div className="lg:hidden">
+        <TurnstileWidget onToken={setTurnstileToken} />
       </div>
     </main>
   );
