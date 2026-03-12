@@ -57,5 +57,6 @@ export interface TryOnPipelineState {
   totalSteps: number;
   stepLabel: string;
   resultUrl: string | null;
+  intermediateUrl: string | null;
   error: string | null;
 }

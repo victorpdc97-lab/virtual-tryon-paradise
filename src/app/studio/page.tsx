@@ -75,6 +75,7 @@ export default function StudioPage() {
             currentStep: data.currentStep,
             totalSteps: data.totalSteps,
             stepLabel: data.stepLabel,
+            ...(data.intermediateUrl && { intermediateUrl: data.intermediateUrl }),
           });
 
           if (data.status === "completed") {

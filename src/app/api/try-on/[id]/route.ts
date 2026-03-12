@@ -91,6 +91,7 @@ export async function GET(
           currentStep: nextStepIndex + 1,
           totalSteps: pipeline.steps.length,
           stepLabel: getStepLabel(nextStep.category),
+          intermediateUrl: outputUrl,
         });
       } else {
         // All steps done

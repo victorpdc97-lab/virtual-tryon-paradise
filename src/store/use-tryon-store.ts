@@ -36,6 +36,7 @@ const initialPipeline: TryOnPipelineState = {
   totalSteps: 0,
   stepLabel: "",
   resultUrl: null,
+  intermediateUrl: null,
   error: null,
 };
 

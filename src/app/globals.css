@@ -55,6 +55,14 @@ body {
   animation: confetti 2s ease-in forwards;
 }
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
 /* Safe area for mobile bottom bar */
 .safe-area-pb {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
