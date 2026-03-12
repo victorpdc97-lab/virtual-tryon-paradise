@@ -28,12 +28,14 @@ export async function startTryOn(
       Authorization: `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model_name: "tryon-max",
+      model_name: "tryon-v1.6",
       inputs: {
         model_image: modelImageUrl,
-        product_image: garmentImageUrl,
+        garment_image: garmentImageUrl,
+        category: category ? mapCategory(category) : "auto",
+        mode: "performance",
         output_format: "jpeg",
-        num_images: 1,
+        num_samples: 1,
       },
     }),
   });
@@ -69,8 +71,8 @@ export async function pollTryOnStatus(
 // to detect completion faster (reduces inter-step latency by up to 6s)
 export async function aggressivePoll(
   id: string,
-  maxChecks = 4,
-  intervalMs = 1500
+  maxChecks = 6,
+  intervalMs = 1000
 ): Promise<{
   id: string;
   status: string;
