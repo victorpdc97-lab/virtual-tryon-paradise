@@ -8,8 +8,8 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "paradise2026";
 
 async function getDashboardData() {
   const [analytics, leads, credits] = await Promise.all([
-    Promise.resolve(getAnalytics()),
-    Promise.resolve(getLeads()),
+    getAnalytics(),
+    getLeads(),
     getCreditsBalance(),
   ]);
   return { analytics, leads, credits };

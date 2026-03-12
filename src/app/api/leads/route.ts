@@ -32,5 +32,6 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({ leads: getLeads() });
+  const leads = await getLeads();
+  return NextResponse.json({ leads });
 }

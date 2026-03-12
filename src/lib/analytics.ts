@@ -1,5 +1,4 @@
-// Simple in-memory analytics for try-on tracking
-// Persists per serverless instance; aggregated via API
+import { loadFromBlob, flushToBlob } from "./persistence";
 
 interface ProductStat {
   productId: number;
@@ -9,11 +8,18 @@ interface ProductStat {
   lastTryOn: number;
 }
 
+interface AnalyticsStore {
+  totalTryOns: number;
+  totalBuyClicks: number;
+  products: Record<string, ProductStat>;
+  dailyTryOns: Record<string, number>;
+}
+
 interface AnalyticsData {
   totalTryOns: number;
   totalBuyClicks: number;
   products: Map<number, ProductStat>;
-  dailyTryOns: Map<string, number>; // "YYYY-MM-DD" -> count
+  dailyTryOns: Map<string, number>;
 }
 
 const analytics: AnalyticsData = {
@@ -23,11 +29,57 @@ const analytics: AnalyticsData = {
   dailyTryOns: new Map(),
 };
 
+let initPromise: Promise<void> | null = null;
+
+function init(): Promise<void> {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const data = await loadFromBlob<AnalyticsStore>("analytics");
+      if (data) {
+        analytics.totalTryOns = Math.max(analytics.totalTryOns, data.totalTryOns || 0);
+        analytics.totalBuyClicks = Math.max(analytics.totalBuyClicks, data.totalBuyClicks || 0);
+
+        if (data.products) {
+          for (const [id, stat] of Object.entries(data.products)) {
+            if (!analytics.products.has(Number(id))) {
+              analytics.products.set(Number(id), stat);
+            }
+          }
+        }
+
+        if (data.dailyTryOns) {
+          for (const [day, count] of Object.entries(data.dailyTryOns)) {
+            const existing = analytics.dailyTryOns.get(day) || 0;
+            analytics.dailyTryOns.set(day, Math.max(existing, count));
+          }
+        }
+      }
+    })();
+  }
+  return initPromise;
+}
+
+function getSerializable(): AnalyticsStore {
+  return {
+    totalTryOns: analytics.totalTryOns,
+    totalBuyClicks: analytics.totalBuyClicks,
+    products: Object.fromEntries(analytics.products),
+    dailyTryOns: Object.fromEntries(analytics.dailyTryOns),
+  };
+}
+
+function flush() {
+  flushToBlob("analytics", getSerializable);
+}
+
 function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
 export function trackTryOn(items: Array<{ id: number; name: string }>) {
+  // Trigger init in background
+  init().catch(() => {});
+
   analytics.totalTryOns++;
 
   const day = today();
@@ -48,9 +100,13 @@ export function trackTryOn(items: Array<{ id: number; name: string }>) {
       });
     }
   }
+
+  flush();
 }
 
 export function trackBuyClick(productId: number, productName: string) {
+  init().catch(() => {});
+
   analytics.totalBuyClicks++;
 
   const existing = analytics.products.get(productId);
@@ -65,9 +121,13 @@ export function trackBuyClick(productId: number, productName: string) {
       lastTryOn: 0,
     });
   }
+
+  flush();
 }
 
-export function getAnalytics() {
+export async function getAnalytics() {
+  await init();
+
   const productStats = Array.from(analytics.products.values())
     .sort((a, b) => b.tryOnCount - a.tryOnCount);
 
@@ -77,7 +137,6 @@ export function getAnalytics() {
     .filter((p) => p.buyClickCount > 0)
     .slice(0, 20);
 
-  // Conversion rate per product (buy clicks / try-ons)
   const conversionRates = productStats
     .filter((p) => p.tryOnCount > 0 && p.buyClickCount > 0)
     .map((p) => ({

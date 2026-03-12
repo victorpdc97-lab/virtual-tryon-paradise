@@ -102,12 +102,22 @@ export function ProductCatalog() {
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {loading && products.length === 0
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/10 overflow-hidden animate-pulse">
+                <div className="aspect-square bg-white/[0.04]" />
+                <div className="p-3 space-y-2">
+                  <div className="h-4 bg-white/[0.06] rounded-lg w-3/4" />
+                  <div className="h-3 bg-white/[0.04] rounded-lg w-1/2" />
+                </div>
+              </div>
+            ))
+          : products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
       </div>
 
-      {loading && (
+      {loading && products.length > 0 && (
         <div className="flex justify-center py-6">
           <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
         </div>
