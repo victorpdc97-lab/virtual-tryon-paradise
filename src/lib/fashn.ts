@@ -33,7 +33,7 @@ export async function startTryOn(
         model_image: modelImageUrl,
         garment_image: garmentImageUrl,
         category: category ? mapCategory(category) : "auto",
-        mode: "performance",
+        mode: "balanced",
         output_format: "jpeg",
         num_samples: 1,
       },
