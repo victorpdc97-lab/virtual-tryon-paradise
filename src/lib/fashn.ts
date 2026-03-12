@@ -28,14 +28,12 @@ export async function startTryOn(
       Authorization: `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model_name: "tryon-v1.6",
+      model_name: "tryon-max",
       inputs: {
         model_image: modelImageUrl,
-        garment_image: garmentImageUrl,
-        category: category ? mapCategory(category) : "auto",
-        mode: "balanced",
+        product_image: garmentImageUrl,
         output_format: "jpeg",
-        num_samples: 1,
+        num_images: 1,
       },
     }),
   });
