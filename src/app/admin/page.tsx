@@ -34,6 +34,8 @@ interface Analytics {
 interface DashboardData {
   analytics: Analytics;
   leads: Lead[];
+  credits: number;
+  token?: string;
 }
 
 type Tab = "overview" | "leads" | "products" | "conversion";
@@ -58,15 +60,39 @@ function formatPhone(phone: string) {
   return phone;
 }
 
+function getCreditsColor(credits: number): string {
+  if (credits < 0) return "text-white/30";
+  if (credits < 50) return "text-red-400";
+  if (credits < 100) return "text-amber-400";
+  return "text-green-400";
+}
+
+function getCreditsLabel(credits: number): string {
+  if (credits < 0) return "N/A";
+  if (credits < 50) return "Baixo";
+  if (credits < 100) return "Medio";
+  return "OK";
+}
+
 export default function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
   const [leadSearch, setLeadSearch] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // Restore token from localStorage on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem("admin_token");
+    if (savedToken) {
+      setToken(savedToken);
+      setAuthenticated(true);
+    }
+  }, []);
 
   const exportLeadsCsv = (leadsToExport: Lead[]) => {
     const header = "Email,Telefone,Cadastro,Try-Ons,Ultimo Uso";
@@ -89,18 +115,20 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url);
   };
 
-  const fetchData = useCallback(async (pwd: string) => {
+  // Fetch data with token (GET)
+  const fetchData = useCallback(async (authToken: string) => {
     try {
       const res = await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: pwd }),
+        headers: { Authorization: `Bearer ${authToken}` },
       });
 
       if (!res.ok) {
         if (res.status === 401) {
-          setError("Senha incorreta");
+          // Token expired — force re-login
           setAuthenticated(false);
+          setToken(null);
+          localStorage.removeItem("admin_token");
+          setError("Sessao expirada. Faca login novamente.");
           return;
         }
         throw new Error("Erro ao buscar dados");
@@ -114,22 +142,64 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  // Auto-fetch on token restore
+  useEffect(() => {
+    if (authenticated && token && !data) {
+      fetchData(token);
+    }
+  }, [authenticated, token, data, fetchData]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    await fetchData(password);
-    if (!error) setAuthenticated(true);
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError("Senha incorreta");
+        } else {
+          setError("Erro ao fazer login");
+        }
+        setLoading(false);
+        return;
+      }
+
+      const result: DashboardData = await res.json();
+      const newToken = result.token!;
+
+      setToken(newToken);
+      localStorage.setItem("admin_token", newToken);
+      setData(result);
+      setAuthenticated(true);
+      setError(null);
+    } catch {
+      setError("Erro de conexao");
+    }
+
     setLoading(false);
+  };
+
+  const handleLogout = () => {
+    setAuthenticated(false);
+    setToken(null);
+    setData(null);
+    setPassword("");
+    localStorage.removeItem("admin_token");
   };
 
   // Auto-refresh every 30s
   useEffect(() => {
-    if (!authenticated || !autoRefresh) return;
-    const interval = setInterval(() => fetchData(password), 30000);
+    if (!authenticated || !autoRefresh || !token) return;
+    const interval = setInterval(() => fetchData(token), 30000);
     return () => clearInterval(interval);
-  }, [authenticated, autoRefresh, password, fetchData]);
+  }, [authenticated, autoRefresh, token, fetchData]);
 
   // Login screen
   if (!authenticated || !data) {
@@ -169,7 +239,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const { analytics, leads } = data;
+  const { analytics, leads, credits } = data;
 
   // Filter leads
   const filteredLeads = leadSearch
@@ -189,6 +259,19 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
+      {/* Credits Warning Banner */}
+      {credits >= 0 && credits < 50 && (
+        <div className={`px-4 py-2 text-center text-sm font-medium ${
+          credits < 20
+            ? "bg-red-500/20 text-red-300 border-b border-red-500/30"
+            : "bg-amber-500/20 text-amber-300 border-b border-amber-500/30"
+        }`}>
+          {credits < 20
+            ? `Creditos Fashn CRITICOS: ${credits} restantes. Recarregue imediatamente!`
+            : `Creditos Fashn baixos: ${credits} restantes. Considere recarregar.`}
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-white/5 px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -197,8 +280,25 @@ export default function AdminDashboard() {
               P
             </div>
             <span className="text-white/80 font-semibold">Admin</span>
+
+            {/* Credits badge */}
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+              credits < 0 ? "bg-white/5 text-white/30" :
+              credits < 50 ? "bg-red-400/10 border border-red-400/20 text-red-400" :
+              credits < 100 ? "bg-amber-400/10 border border-amber-400/20 text-amber-400" :
+              "bg-green-400/10 border border-green-400/20 text-green-400"
+            }`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${
+                credits < 0 ? "bg-white/30" :
+                credits < 50 ? "bg-red-400" :
+                credits < 100 ? "bg-amber-400" :
+                "bg-green-400"
+              }`} />
+              {credits >= 0 ? `${credits} creditos` : "Creditos N/A"}
+              <span className="text-white/30 ml-1">({getCreditsLabel(credits)})</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setAutoRefresh(!autoRefresh)}
               className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
@@ -210,10 +310,16 @@ export default function AdminDashboard() {
               {autoRefresh ? "Auto-refresh ON" : "Auto-refresh OFF"}
             </button>
             <button
-              onClick={() => fetchData(password)}
+              onClick={() => token && fetchData(token)}
               className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-white/50 hover:text-white hover:border-white/25 transition-all"
             >
               Atualizar
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-xs px-3 py-1.5 rounded-lg border border-red-400/20 text-red-400/60 hover:text-red-400 hover:border-red-400/40 transition-all"
+            >
+              Sair
             </button>
           </div>
         </div>

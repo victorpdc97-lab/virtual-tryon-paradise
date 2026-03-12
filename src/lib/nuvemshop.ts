@@ -137,13 +137,11 @@ async function fetchPage(apiPage: number, perPage: number): Promise<{ products: 
 // Cache all filtered products in memory to avoid repeated API calls
 let cachedProducts: Product[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let isRefreshing = false;
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const STALE_TTL = 60 * 60 * 1000; // 1 hour (serve stale while refreshing)
 
-async function loadAllProducts(): Promise<Product[]> {
-  if (cachedProducts && Date.now() - cacheTimestamp < CACHE_TTL) {
-    return cachedProducts;
-  }
-
+async function fetchAllFromApi(): Promise<Product[]> {
   await loadCategoryMap();
 
   const allProducts: Product[] = [];
@@ -158,7 +156,6 @@ async function loadAllProducts(): Promise<Product[]> {
     for (const p of result.products) {
       if (!p.images?.length) continue;
 
-      // Excluir produtos que não são roupas/calçados (acessórios, cosméticos, etc.)
       const productName = (p.name?.pt || "").toLowerCase();
       if (BLACKLIST_RE.test(productName)) continue;
 
@@ -172,10 +169,37 @@ async function loadAllProducts(): Promise<Product[]> {
     apiPage++;
   }
 
-  cachedProducts = allProducts;
-  cacheTimestamp = Date.now();
-
   return allProducts;
+}
+
+async function loadAllProducts(): Promise<Product[]> {
+  const age = Date.now() - cacheTimestamp;
+
+  // Fresh cache — return immediately
+  if (cachedProducts && age < CACHE_TTL) {
+    return cachedProducts;
+  }
+
+  // Stale cache — serve it but refresh in background
+  if (cachedProducts && age < STALE_TTL) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      fetchAllFromApi()
+        .then((products) => {
+          cachedProducts = products;
+          cacheTimestamp = Date.now();
+        })
+        .catch(() => {})
+        .finally(() => { isRefreshing = false; });
+    }
+    return cachedProducts;
+  }
+
+  // No cache or expired — fetch synchronously
+  const products = await fetchAllFromApi();
+  cachedProducts = products;
+  cacheTimestamp = Date.now();
+  return products;
 }
 
 export async function getProducts(
