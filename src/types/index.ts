@@ -27,12 +27,13 @@ export interface Product {
   variantId: number | null;
 }
 
-export type GarmentCategory = "tops" | "bottoms" | "shoes";
+export type GarmentCategory = "tops" | "bottoms" | "shoes" | "overlays";
 
 export interface SelectedItems {
   tops: Product | null;
   bottoms: Product | null;
   shoes: Product | null;
+  overlays: Product | null;
 }
 
 export interface TryOnJob {

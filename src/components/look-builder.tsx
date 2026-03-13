@@ -16,12 +16,22 @@ interface LookBuilderProps {
 }
 
 export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
-  const { selectedItems, removeItem, getSelectedCount } = useTryOnStore();
+  const { selectedItems, removeItem, getSelectedCount, baseLayer } = useTryOnStore();
   const count = getSelectedCount();
+  const hasOverlay = !!selectedItems.overlays;
 
-  const totalPrice = Object.values(selectedItems)
-    .filter(Boolean)
-    .reduce((sum, item) => sum + (item!.promoPrice ?? item!.price ?? 0), 0);
+  const totalPrice = (() => {
+    let sum = 0;
+    if (hasOverlay && baseLayer) {
+      sum += baseLayer.promoPrice ?? baseLayer.price ?? 0;
+      sum += selectedItems.overlays!.promoPrice ?? selectedItems.overlays!.price ?? 0;
+    } else if (selectedItems.tops) {
+      sum += selectedItems.tops.promoPrice ?? selectedItems.tops.price ?? 0;
+    }
+    if (selectedItems.bottoms) sum += selectedItems.bottoms.promoPrice ?? selectedItems.bottoms.price ?? 0;
+    if (selectedItems.shoes) sum += selectedItems.shoes.promoPrice ?? selectedItems.shoes.price ?? 0;
+    return sum;
+  })();
 
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4">
@@ -36,7 +46,113 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
       </h3>
 
       <div className="space-y-2">
-        {SLOTS.map(({ category, label, icon }) => {
+        {/* Overlay group: base + blazer */}
+        {hasOverlay ? (
+          <div className="space-y-1">
+            {/* Base layer */}
+            {baseLayer ? (
+              <div className="flex items-center gap-3 rounded-xl p-3 bg-teal-400/5 border border-teal-400/20">
+                <Image
+                  src={baseLayer.image}
+                  alt={baseLayer.name}
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 rounded-lg object-cover"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] text-amber-400/80 font-semibold uppercase tracking-wider">base</span>
+                  </div>
+                  <p className="text-white/80 text-sm truncate">{baseLayer.name}</p>
+                  <p className="text-teal-400 text-xs">
+                    R$ {(baseLayer.promoPrice ?? baseLayer.price ?? 0).toFixed(2).replace(".", ",")}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 rounded-xl p-3 bg-white/[0.02] border border-dashed border-white/10 animate-pulse">
+                <span className="text-2xl w-12 text-center">👕</span>
+                <p className="text-white/40 text-sm">Selecionando base...</p>
+              </div>
+            )}
+
+            {/* Overlay (blazer) */}
+            <div className="flex items-center gap-3 rounded-xl p-3 bg-teal-400/5 border border-teal-400/20">
+              <Image
+                src={selectedItems.overlays!.image}
+                alt={selectedItems.overlays!.name}
+                width={48}
+                height={48}
+                className="w-12 h-12 rounded-lg object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] text-amber-400/80 font-semibold uppercase tracking-wider">sobreposição</span>
+                </div>
+                <p className="text-white/80 text-sm truncate">{selectedItems.overlays!.name}</p>
+                <p className="text-teal-400 text-xs">
+                  R$ {(selectedItems.overlays!.promoPrice ?? selectedItems.overlays!.price ?? 0).toFixed(2).replace(".", ",")}
+                </p>
+              </div>
+              <button
+                onClick={() => removeItem("overlays")}
+                className="text-white/30 hover:text-red-400 transition-colors p-1"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Normal top slot */
+          (() => {
+            const item = selectedItems.tops;
+            return (
+              <div
+                className={`flex items-center gap-3 rounded-xl p-3 transition-all ${
+                  item
+                    ? "bg-teal-400/5 border border-teal-400/20"
+                    : "bg-white/[0.02] border border-dashed border-white/10"
+                }`}
+              >
+                {item ? (
+                  <>
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/80 text-sm truncate">{item.name}</p>
+                      <p className="text-teal-400 text-xs">
+                        R$ {(item.promoPrice ?? item.price ?? 0).toFixed(2).replace(".", ",")}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeItem("tops")}
+                      className="text-white/30 hover:text-red-400 transition-colors p-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl w-12 text-center">👕</span>
+                    <p className="text-white/40 text-sm">Parte de cima</p>
+                  </>
+                )}
+              </div>
+            );
+          })()
+        )}
+
+        {/* Bottom and shoes slots */}
+        {SLOTS.filter((s) => s.category !== "tops").map(({ category, label, icon }) => {
           const item = selectedItems[category];
           return (
             <div

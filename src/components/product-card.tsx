@@ -12,6 +12,7 @@ interface ProductCardProps {
 
 export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   const { selectedItems, selectItem, removeItem } = useTryOnStore();
+  const isOverlay = product.category === "overlays";
   const isSelected = selectedItems[product.category]?.id === product.id;
   const [showZoom, setShowZoom] = useState(false);
 
@@ -46,6 +47,12 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
+          </div>
+        )}
+
+        {isOverlay && (
+          <div className="absolute top-2 left-2 z-10 bg-amber-400/90 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">
+            Sobreposição
           </div>
         )}
 

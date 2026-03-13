@@ -65,13 +65,37 @@ export function TryOnProgress() {
 
   if (pipeline.status === "idle") return null;
 
-  const steps = [
-    { label: "Vestindo parte de cima...", icon: "👕", doneLabel: "Parte de cima pronta" },
-    { label: "Vestindo parte de baixo...", icon: "👖", doneLabel: "Parte de baixo pronta" },
-    { label: "Calçando...", icon: "👟", doneLabel: "Calçado pronto" },
-  ];
+  // Build active steps list based on total steps
+  const buildSteps = () => {
+    if (pipeline.totalSteps <= 0) return [];
 
-  const activeSteps = steps.slice(0, pipeline.totalSteps);
+    // Check step labels from the server to determine which steps
+    const hasOverlay = pipeline.stepLabel === "Vestindo base..." ||
+      pipeline.stepLabel === "Aplicando blazer...";
+
+    if (hasOverlay || (pipeline.totalSteps === 4)) {
+      // 4 steps: base + blazer + bottom + shoes
+      // 3 steps with overlay: base + blazer + bottom
+      // 2 steps with overlay: base + blazer
+      const overlaySteps = [
+        { label: "Vestindo base...", icon: "👕", doneLabel: "Base pronta" },
+        { label: "Aplicando blazer...", icon: "🧥", doneLabel: "Blazer aplicado" },
+        { label: "Vestindo parte de baixo...", icon: "👖", doneLabel: "Parte de baixo pronta" },
+        { label: "Calçando...", icon: "👟", doneLabel: "Calçado pronto" },
+      ];
+      return overlaySteps.slice(0, pipeline.totalSteps);
+    }
+
+    // Normal pipeline: top + bottom + shoes
+    const normalSteps = [
+      { label: "Vestindo parte de cima...", icon: "👕", doneLabel: "Parte de cima pronta" },
+      { label: "Vestindo parte de baixo...", icon: "👖", doneLabel: "Parte de baixo pronta" },
+      { label: "Calçando...", icon: "👟", doneLabel: "Calçado pronto" },
+    ];
+    return normalSteps.slice(0, pipeline.totalSteps);
+  };
+
+  const activeSteps = buildSteps();
   const stepBase = ((pipeline.currentStep - 1) / pipeline.totalSteps) * 100;
   const stepSize = 100 / pipeline.totalSteps;
   // Smooth fill within current step: crawl up to 80% of the step range over ~60s

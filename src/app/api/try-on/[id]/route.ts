@@ -2,9 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { aggressivePoll, startTryOn } from "@/lib/fashn";
 import { pipelines } from "../route";
 
-function getStepLabel(category: string): string {
+function getStepLabel(category: string, stepIndex: number, steps: Array<{ category: string }>): string {
+  if (category === "tops") {
+    // Count how many "tops" steps exist before this one
+    const topsBeforeThis = steps.slice(0, stepIndex).filter((s) => s.category === "tops").length;
+    if (topsBeforeThis > 0) return "Aplicando blazer...";
+    // Check if there's another tops step after this one (meaning this is the base)
+    const topsAfterThis = steps.slice(stepIndex + 1).filter((s) => s.category === "tops").length;
+    if (topsAfterThis > 0) return "Vestindo base...";
+    return "Vestindo parte de cima...";
+  }
+
   const labels: Record<string, string> = {
-    tops: "Vestindo parte de cima...",
     bottoms: "Vestindo parte de baixo...",
     shoes: "Calçando...",
   };
@@ -90,7 +99,7 @@ export async function GET(
           status: "processing",
           currentStep: nextStepIndex + 1,
           totalSteps: pipeline.steps.length,
-          stepLabel: getStepLabel(nextStep.category),
+          stepLabel: getStepLabel(nextStep.category, nextStepIndex, pipeline.steps),
           intermediateUrl: outputUrl,
         });
       } else {
@@ -113,7 +122,11 @@ export async function GET(
       status: "processing",
       currentStep: pipeline.currentStep + 1,
       totalSteps: pipeline.steps.length,
-      stepLabel: getStepLabel(pipeline.steps[pipeline.currentStep].category),
+      stepLabel: getStepLabel(
+        pipeline.steps[pipeline.currentStep].category,
+        pipeline.currentStep,
+        pipeline.steps
+      ),
     });
   } catch (error) {
     console.error("Poll error:", error);

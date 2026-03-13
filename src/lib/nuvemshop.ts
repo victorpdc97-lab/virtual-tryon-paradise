@@ -28,7 +28,8 @@ export async function loadCategoryMap(): Promise<void> {
   const categories = await res.json();
   // Order matters: shoes before bottoms (since "calçado" contains "calça")
   const orderedKeywords: Array<[GarmentCategory, string[]]> = [
-    ["tops", ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped", "polo", "blazer", "colete", "sueter", "suéter", "fitness", "tech", "oversize", "manga", "sobreposição", "sobreposicao", "sobreposições", "sobreposicoes"]],
+    ["overlays", ["blazer"]],
+    ["tops", ["camis", "blus", "top", "moleton", "jaqueta", "casaco", "camisa", "camiseta", "regata", "cropped", "polo", "colete", "sueter", "suéter", "fitness", "tech", "oversize", "manga", "sobreposição", "sobreposicao", "sobreposições", "sobreposicoes"]],
     ["shoes", ["calçado", "calcado", "tênis", "tenis", "sapato", "sandal", "bota", "chinelo", "alpargata"]],
     ["bottoms", ["calça", "calca", "short", "saia", "bermuda", "legging", "jeans"]],
   ];
@@ -49,11 +50,14 @@ export async function loadCategoryMap(): Promise<void> {
 // Blacklist: produtos que NÃO são roupas/calçados (acessórios, cosméticos, etc.)
 const BLACKLIST_RE = /spray|impermeabilizante|pomada|prendedor|cera|gel|shampoo|condicionador|perfume|desodorante|hidratante|protetor|creme|óleo|oleo|escova|pente|acessório|acessorio|carteira|bolsa|mochila|necessaire|cinto|colar|pulseira|\\banel\\b|brinco|óculos|oculos|relógio|relogio|boné|bone|gorro|chapéu|chapeu|meia|cueca|luva|gravata|lenço|lenco|toalha|máscara|mascara|limpeza|removedor|cola|graxa|tinta|cadarço|cadarco|palmilha|kit\b|combo\b|sunga|quadro|chaveiro|pochete|faixa|tiara|presilha|piercing|corrente|pingente|aliança|alianca|broche|cachecol|loção|locao|sabonete|balm|serum|sérum|talco|mousse|esfoliante|tônico|tonico|esmalte|batom|maquiagem|unha|depilação|depilacao|barbear|navalha|gilete|renova solado|brilho expresso|limpa couro|limpa tenis|limpa tênis|muss plus|solado|lustro|engraxe|polimento|restaurador|selante|condicionador de couro|case cap|vale presente|frete|outlet\b|taxa/i;
 
-const TOP_RE = /camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|blazer|colete|sueter|suéter|fitness|tech|oversize|manga|sobreposi/i;
+const BLAZER_RE = /blazer/i;
+const TOP_RE = /camis|blus|top|moleton|jaqueta|casaco|regata|cropped|polo|colete|sueter|suéter|fitness|tech|oversize|manga|sobreposi/i;
 const SHOE_RE = /calçado|calcado|tênis|tenis|sapato|sandal|bota|chinelo|alpargata/i;
 const BOTTOM_RE = /calça|calca|short|saia|bermuda|legging|jeans/i;
 
 function matchKeywords(text: string): GarmentCategory | null {
+  // Check blazer BEFORE general tops
+  if (BLAZER_RE.test(text)) return "overlays";
   if (TOP_RE.test(text)) return "tops";
   // Check shoes BEFORE bottoms — "calçados" contains "calça"
   if (SHOE_RE.test(text)) return "shoes";
@@ -211,8 +215,13 @@ export async function getProducts(
   const allProducts = await loadAllProducts();
 
   // Filter by category if needed
+  // When filtering by "tops", also include overlays (blazers show in "Parte de Cima")
   let filtered = filterCategory
-    ? allProducts.filter((p) => p.category === filterCategory)
+    ? allProducts.filter((p) =>
+        filterCategory === "tops"
+          ? p.category === "tops" || p.category === "overlays"
+          : p.category === filterCategory
+      )
     : allProducts;
 
   // Filter by search term
