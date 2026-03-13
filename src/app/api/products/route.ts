@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getProducts } from "@/lib/nuvemshop";
 import type { GarmentCategory } from "@/types";
 
-const VALID_CATEGORIES: GarmentCategory[] = ["tops", "bottoms", "shoes", "overlays"];
+const VALID_CATEGORIES: GarmentCategory[] = ["tops", "bottoms", "shoes"];
 
 export async function GET(req: NextRequest) {
   try {

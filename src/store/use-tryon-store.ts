@@ -14,8 +14,6 @@ interface TryOnStore {
   photoBlobUrl: string | null;
   photoFile: File | null;
   selectedItems: Record<GarmentCategory, Product | null>;
-  baseLayer: Product | null;
-  showBaseToast: boolean;
   pipeline: TryOnPipelineState;
 
   setLead: (lead: LeadInfo) => void;
@@ -26,9 +24,6 @@ interface TryOnStore {
   clearItems: () => void;
   getSelectedCount: () => number;
   getSelectedList: () => Product[];
-  setBaseLayer: (product: Product) => void;
-  clearBaseLayer: () => void;
-  dismissBaseToast: () => void;
 
   setPipelineStatus: (update: Partial<TryOnPipelineState>) => void;
   resetPipeline: () => void;
@@ -50,9 +45,7 @@ export const useTryOnStore = create<TryOnStore>((set, get) => ({
   photoUrl: null,
   photoBlobUrl: null,
   photoFile: null,
-  selectedItems: { tops: null, bottoms: null, shoes: null, overlays: null },
-  baseLayer: null,
-  showBaseToast: false,
+  selectedItems: { tops: null, bottoms: null, shoes: null },
   pipeline: { ...initialPipeline },
 
   setLead: (lead) => set({ lead }),
@@ -62,46 +55,6 @@ export const useTryOnStore = create<TryOnStore>((set, get) => ({
 
   selectItem: (product) => {
     const state = get();
-
-    if (product.category === "overlays") {
-      // Selecting an overlay (blazer)
-      const currentTop = state.selectedItems.tops;
-
-      if (currentTop) {
-        // Move current top to base layer
-        set({
-          selectedItems: { ...state.selectedItems, overlays: product },
-          baseLayer: currentTop,
-          showBaseToast: false,
-        });
-      } else if (!state.baseLayer) {
-        // No top and no base — need to auto-fetch one
-        // Set overlay immediately, base will be set async via setBaseLayer
-        set({
-          selectedItems: { ...state.selectedItems, overlays: product },
-          showBaseToast: true,
-        });
-        // Fetch default base layer
-        fetchDefaultBase().then((base) => {
-          if (base && get().selectedItems.overlays?.id === product.id) {
-            set({ baseLayer: base, showBaseToast: true });
-          }
-        });
-      } else {
-        // Already has a base layer from previous overlay
-        set({
-          selectedItems: { ...state.selectedItems, overlays: product },
-        });
-      }
-      return;
-    }
-
-    if (product.category === "tops" && state.selectedItems.overlays) {
-      // Selecting a top while overlay is active — set as base layer
-      set({ baseLayer: product, showBaseToast: false });
-      return;
-    }
-
     set({
       selectedItems: {
         ...state.selectedItems,
@@ -112,33 +65,6 @@ export const useTryOnStore = create<TryOnStore>((set, get) => ({
 
   removeItem: (category) => {
     const state = get();
-
-    if (category === "overlays") {
-      // Removing overlay: base becomes normal top
-      const base = state.baseLayer;
-      set({
-        selectedItems: {
-          ...state.selectedItems,
-          overlays: null,
-          tops: base || state.selectedItems.tops,
-        },
-        baseLayer: null,
-        showBaseToast: false,
-      });
-      return;
-    }
-
-    if (category === "tops" && state.selectedItems.overlays && state.baseLayer) {
-      // Trying to remove base while overlay active — auto-select new base
-      set({ showBaseToast: true });
-      fetchDefaultBase().then((base) => {
-        if (base && get().selectedItems.overlays) {
-          set({ baseLayer: base, showBaseToast: true });
-        }
-      });
-      return;
-    }
-
     set({
       selectedItems: { ...state.selectedItems, [category]: null },
     });
@@ -146,40 +72,25 @@ export const useTryOnStore = create<TryOnStore>((set, get) => ({
 
   clearItems: () =>
     set({
-      selectedItems: { tops: null, bottoms: null, shoes: null, overlays: null },
-      baseLayer: null,
-      showBaseToast: false,
+      selectedItems: { tops: null, bottoms: null, shoes: null },
     }),
 
   getSelectedCount: () => {
-    const { selectedItems, baseLayer } = get();
-    let count = [selectedItems.tops, selectedItems.bottoms, selectedItems.shoes, selectedItems.overlays]
+    const { selectedItems } = get();
+    return [selectedItems.tops, selectedItems.bottoms, selectedItems.shoes]
       .filter(Boolean).length;
-    if (baseLayer && selectedItems.overlays) count++; // base counts as extra piece
-    return count;
   },
 
   getSelectedList: () => {
-    const { selectedItems, baseLayer } = get();
+    const { selectedItems } = get();
     const list: Product[] = [];
 
-    if (selectedItems.overlays && baseLayer) {
-      // Base first, then overlay — both sent as "tops" to Fashn
-      list.push({ ...baseLayer, category: "tops" });
-      list.push({ ...selectedItems.overlays, category: "tops" });
-    } else if (selectedItems.tops) {
-      list.push(selectedItems.tops);
-    }
-
+    if (selectedItems.tops) list.push(selectedItems.tops);
     if (selectedItems.bottoms) list.push(selectedItems.bottoms);
     if (selectedItems.shoes) list.push(selectedItems.shoes);
 
     return list;
   },
-
-  setBaseLayer: (product) => set({ baseLayer: product, showBaseToast: true }),
-  clearBaseLayer: () => set({ baseLayer: null, showBaseToast: false }),
-  dismissBaseToast: () => set({ showBaseToast: false }),
 
   setPipelineStatus: (update) =>
     set((state) => ({
@@ -188,16 +99,3 @@ export const useTryOnStore = create<TryOnStore>((set, get) => ({
 
   resetPipeline: () => set({ pipeline: { ...initialPipeline } }),
 }));
-
-// Fetch the first simple top (t-shirt/shirt) as default base layer
-async function fetchDefaultBase(): Promise<Product | null> {
-  try {
-    const res = await fetch("/api/products?category=tops&page=1");
-    if (!res.ok) return null;
-    const data = await res.json();
-    // Return first product that's a simple top (not an overlay)
-    return data.products?.[0] || null;
-  } catch {
-    return null;
-  }
-}

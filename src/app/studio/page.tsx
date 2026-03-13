@@ -13,8 +13,6 @@ import { TurnstileWidget } from "@/components/turnstile-widget";
 import { Onboarding } from "@/components/onboarding";
 import { Celebration } from "@/components/celebration";
 import { MobileLookBar } from "@/components/mobile-look-bar";
-import { BaseLayerToast } from "@/components/base-layer-toast";
-import { BasePickerDrawer } from "@/components/base-picker-drawer";
 
 export default function StudioPage() {
   const router = useRouter();
@@ -32,7 +30,6 @@ export default function StudioPage() {
   const [remaining, setRemaining] = useState<number | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [showBasePicker, setShowBasePicker] = useState(false);
   const prevStatusRef = useRef(pipeline.status);
 
   useEffect(() => {
@@ -268,10 +265,6 @@ export default function StudioPage() {
           </div>
         </div>
       </div>
-
-      {/* Base layer toast + drawer */}
-      <BaseLayerToast onChangeTap={() => setShowBasePicker(true)} />
-      <BasePickerDrawer open={showBasePicker} onClose={() => setShowBasePicker(false)} />
 
       {/* Mobile floating look bar */}
       <MobileLookBar

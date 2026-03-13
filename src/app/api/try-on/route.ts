@@ -70,7 +70,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // overlays are sent as "tops" by the client, ordering ensures base comes before overlay
     const categoryOrder = ["tops", "bottoms", "shoes"];
     const sortedItems = [...body.items].sort(
       (a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
@@ -133,16 +132,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function getStepLabel(category: string, stepIndex: number, steps: Array<{ category: string }>): string {
-  if (category === "tops") {
-    const topsAfterThis = steps.slice(stepIndex + 1).filter((s) => s.category === "tops").length;
-    if (topsAfterThis > 0) return "Vestindo base...";
-    const topsBeforeThis = steps.slice(0, stepIndex).filter((s) => s.category === "tops").length;
-    if (topsBeforeThis > 0) return "Aplicando blazer...";
-    return "Vestindo parte de cima...";
-  }
-
+function getStepLabel(category: string, _stepIndex: number, _steps: Array<{ category: string }>): string {
   const labels: Record<string, string> = {
+    tops: "Vestindo parte de cima...",
     bottoms: "Vestindo parte de baixo...",
     shoes: "Calçando...",
   };
