@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import type { GarmentCategory } from "@/types";
 
@@ -48,9 +49,11 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
             >
               {item ? (
                 <>
-                  <img
+                  <Image
                     src={item.image}
                     alt={item.name}
+                    width={48}
+                    height={48}
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                   <div className="flex-1 min-w-0">
@@ -71,7 +74,7 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
               ) : (
                 <>
                   <span className="text-2xl w-12 text-center">{icon}</span>
-                  <p className="text-white/30 text-sm">{label}</p>
+                  <p className="text-white/40 text-sm">{label}</p>
                 </>
               )}
             </div>
@@ -91,7 +94,7 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
           <button
             onClick={onTryOn}
             disabled={disabled}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm hover:from-teal-400 hover:to-teal-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm hover:from-teal-400 hover:to-teal-300 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             ✨ Experimentar Look
           </button>

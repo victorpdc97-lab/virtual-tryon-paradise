@@ -51,7 +51,9 @@ export function CategoryFilter({ active, onChange }: CategoryFilterProps) {
         <button
           key={cat.id}
           onClick={() => onChange(cat.id)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+          aria-label={`Filtrar por ${cat.label}`}
+          aria-pressed={active === cat.id}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all min-h-[44px] active:scale-95 ${
             active === cat.id
               ? "bg-teal-400 text-black"
               : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"

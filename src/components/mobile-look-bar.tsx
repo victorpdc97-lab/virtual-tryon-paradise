@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import type { GarmentCategory } from "@/types";
 
@@ -34,16 +35,19 @@ export function MobileLookBar({ onTryOn, disabled }: MobileLookBarProps) {
                 <div key={cat} className="relative">
                   {item ? (
                     <div className="relative">
-                      <img
+                      <Image
                         src={item.image}
                         alt={item.name}
+                        width={44}
+                        height={44}
                         className="w-11 h-11 rounded-lg object-cover border border-teal-400/30"
                       />
                       <button
                         onClick={() => removeItem(cat)}
-                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center"
+                        aria-label={`Remover ${item.name}`}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center active:scale-90 hover:bg-red-400 transition-all"
                       >
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
@@ -62,7 +66,7 @@ export function MobileLookBar({ onTryOn, disabled }: MobileLookBarProps) {
           <button
             onClick={onTryOn}
             disabled={disabled}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm whitespace-nowrap hover:from-teal-400 hover:to-teal-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm whitespace-nowrap hover:from-teal-400 hover:to-teal-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Experimentar ({count})
           </button>

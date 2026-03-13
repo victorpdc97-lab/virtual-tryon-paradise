@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import type { Product } from "@/types";
 
@@ -70,9 +71,11 @@ export function BuyLookCta() {
             key={item.id}
             className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-xl p-3"
           >
-            <img
+            <Image
               src={item.image}
               alt={item.name}
+              width={56}
+              height={56}
               className="w-14 h-14 rounded-lg object-cover"
             />
             <div className="flex-1 min-w-0">
@@ -102,7 +105,7 @@ export function BuyLookCta() {
       <div className="flex gap-3">
         <button
           onClick={handleBuyAll}
-          className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm text-center hover:from-teal-400 hover:to-teal-300 transition-all"
+          className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm text-center hover:from-teal-400 hover:to-teal-300 transition-all active:scale-[0.97]"
         >
           Comprar Tudo
         </button>

@@ -72,9 +72,13 @@ export function TryOnProgress() {
   ];
 
   const activeSteps = steps.slice(0, pipeline.totalSteps);
+  const stepBase = ((pipeline.currentStep - 1) / pipeline.totalSteps) * 100;
+  const stepSize = 100 / pipeline.totalSteps;
+  // Smooth fill within current step: crawl up to 80% of the step range over ~60s
+  const inStepProgress = Math.min(0.8, elapsedSeconds / 60) * stepSize;
   const progressPercent = pipeline.status === "completed"
     ? 100
-    : Math.min(95, ((pipeline.currentStep - 1) / pipeline.totalSteps) * 100 + (elapsedSeconds % 50));
+    : Math.min(95, stepBase + inStepProgress);
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -127,7 +131,7 @@ export function TryOnProgress() {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6">
             {/* Spinner with glow */}
             <div className="relative">
-              <div className="w-14 h-14 rounded-full bg-teal-400/10 border-2 border-teal-400 border-t-transparent animate-spin" />
+              <div className="w-14 h-14 rounded-full bg-teal-400/10 border-2 border-teal-400 border-t-transparent animate-spin" role="status" aria-label="Processando look" />
               <div className="absolute inset-0 w-14 h-14 rounded-full bg-teal-400/5 blur-xl" />
             </div>
 

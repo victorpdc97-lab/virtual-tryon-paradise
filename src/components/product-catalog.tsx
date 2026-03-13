@@ -101,7 +101,7 @@ export function ProductCatalog() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
         {loading && products.length === 0
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="rounded-xl border border-white/10 overflow-hidden animate-pulse">
@@ -126,7 +126,7 @@ export function ProductCatalog() {
       {hasMore && !loading && products.length > 0 && (
         <button
           onClick={loadMore}
-          className="w-full py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all text-sm"
+          className="w-full py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all text-sm active:scale-[0.98]"
         >
           Carregar mais
         </button>
