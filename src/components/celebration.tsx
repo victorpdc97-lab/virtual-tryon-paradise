@@ -34,7 +34,13 @@ export function Celebration() {
   if (particles.length === 0) return null;
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 overflow-hidden cursor-pointer"
+      onClick={() => setParticles([])}
+      role="button"
+      aria-label="Fechar animação"
+      tabIndex={0}
+    >
       {particles.map((p) => (
         <div
           key={p.id}

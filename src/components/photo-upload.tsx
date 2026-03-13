@@ -8,6 +8,7 @@ export function PhotoUpload() {
   const { photoUrl, setPhoto, clearPhoto } = useTryOnStore();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -15,6 +16,7 @@ export function PhotoUpload() {
       if (!file) return;
 
       setError(null);
+      setWarning(null);
       setUploading(true);
 
       try {
@@ -50,6 +52,7 @@ export function PhotoUpload() {
           apiUrl = data.url;
         } catch {
           // Fallback: convert to base64 data URL if Blob upload fails
+          setWarning("Upload lento — usando modo alternativo. O processamento pode demorar mais.");
           const buffer = await processedFile.arrayBuffer();
           const base64 = btoa(
             new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
@@ -144,6 +147,15 @@ export function PhotoUpload() {
 
       {error && (
         <p className="text-red-400 text-sm text-center">{error}</p>
+      )}
+
+      {warning && (
+        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 text-amber-400 text-xs">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" />
+          </svg>
+          {warning}
+        </div>
       )}
 
       <div className="flex items-center gap-2 text-white/30 text-xs justify-center">

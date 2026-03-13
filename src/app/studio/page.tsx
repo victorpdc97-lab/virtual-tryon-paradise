@@ -28,6 +28,7 @@ export default function StudioPage() {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const prevStatusRef = useRef(pipeline.status);
 
@@ -45,6 +46,18 @@ export default function StudioPage() {
     }
     prevStatusRef.current = pipeline.status;
   }, [pipeline.status]);
+
+  // Countdown timer for rate limit
+  useEffect(() => {
+    if (retryCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setRetryCountdown((c) => {
+        if (c <= 1) { clearInterval(timer); return 0; }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [retryCountdown]);
 
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
@@ -136,6 +149,9 @@ export default function StudioPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 429 && data.retryAfter) {
+          setRetryCountdown(data.retryAfter);
+        }
         setPipelineStatus({
           status: "failed",
           error: data.error || "Erro ao iniciar try-on",
@@ -199,16 +215,22 @@ export default function StudioPage() {
             <PhotoUpload />
             {isProcessing && <TryOnProgress />}
             {isFailed && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center space-y-2">
                 <p className="text-red-400 text-sm font-medium">
                   {pipeline.error || "Erro no processamento"}
                 </p>
-                <button
-                  onClick={resetPipeline}
-                  className="mt-2 text-xs text-white/50 hover:text-white/80 underline"
-                >
-                  Tentar novamente
-                </button>
+                {retryCountdown > 0 ? (
+                  <p className="text-white/40 text-xs">
+                    Tente novamente em <span className="text-white/70 font-mono">{retryCountdown}s</span>
+                  </p>
+                ) : (
+                  <button
+                    onClick={() => { resetPipeline(); handleTryOn(); }}
+                    className="text-xs text-teal-400 hover:text-teal-300 underline transition-colors active:scale-95"
+                  >
+                    Tentar novamente
+                  </button>
+                )}
               </div>
             )}
             {isCompleted && (

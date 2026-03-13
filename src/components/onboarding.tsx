@@ -36,6 +36,16 @@ export function Onboarding() {
     }
   }, []);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!show) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleDismiss();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
   const handleDismiss = () => {
     setShow(false);
     try {

@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const rateCheck = checkRateLimit(ip);
     if (!rateCheck.allowed) {
       return NextResponse.json(
-        { error: rateCheck.error },
+        { error: rateCheck.error, retryAfter: rateCheck.retryAfter },
         { status: 429 }
       );
     }

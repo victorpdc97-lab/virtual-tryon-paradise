@@ -25,7 +25,7 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-export function checkRateLimit(ip: string): { allowed: boolean; error?: string; remaining?: number } {
+export function checkRateLimit(ip: string): { allowed: boolean; error?: string; remaining?: number; retryAfter?: number } {
   const now = Date.now();
   let entry = store.get(ip);
 
@@ -53,9 +53,11 @@ export function checkRateLimit(ip: string): { allowed: boolean; error?: string; 
 
   // Check per-minute limit
   if (entry.minuteCount >= MINUTE_LIMIT) {
+    const retryAfter = Math.ceil((entry.minuteReset - now) / 1000);
     return {
       allowed: false,
       error: "Muitas requisições. Aguarde um momento antes de tentar novamente.",
+      retryAfter,
     };
   }
 
@@ -64,6 +66,7 @@ export function checkRateLimit(ip: string): { allowed: boolean; error?: string; 
     return {
       allowed: false,
       error: `Você atingiu o limite de ${DAILY_LIMIT} experimentações por dia. Volte amanhã!`,
+      retryAfter: Math.ceil((entry.dailyReset - now) / 1000),
     };
   }
 
