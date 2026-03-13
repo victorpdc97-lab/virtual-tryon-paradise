@@ -5,15 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.tiendanube.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.nuvemshop.com.br",
-      },
-      {
-        protocol: "https",
-        hostname: "**.vercel-storage.com",
+        hostname: "**",
       },
     ],
   },
