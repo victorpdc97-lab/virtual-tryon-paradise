@@ -21,37 +21,20 @@ export async function startTryOn(
   garmentImageUrl: string,
   category?: string
 ): Promise<{ id: string; error: string | null }> {
-  // tryon-max: best quality, auto-detects category, uses product_image
-  // tryon-v1.6: supports explicit category param, uses garment_image
-  // Strategy: tryon-max for tops (first step), v1.6 with explicit category for bottoms/shoes
-  const useV16 = category === "bottoms" || category === "shoes";
-
-  const body = useV16
-    ? {
-        model_name: "tryon-v1.6",
-        inputs: {
-          model_image: modelImageUrl,
-          garment_image: garmentImageUrl,
-          category: mapCategory(category!),
-          output_format: "jpeg",
-        },
-      }
-    : {
-        model_name: "tryon-max",
-        inputs: {
-          model_image: modelImageUrl,
-          product_image: garmentImageUrl,
-          output_format: "jpeg",
-        },
-      };
-
   const res = await fetch(`${FASHN_BASE}/run`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getApiKey()}`,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      model_name: "tryon-max",
+      inputs: {
+        model_image: modelImageUrl,
+        product_image: garmentImageUrl,
+        output_format: "jpeg",
+      },
+    }),
   });
 
   if (!res.ok) {
