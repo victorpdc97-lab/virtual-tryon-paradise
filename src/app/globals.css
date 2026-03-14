@@ -15,6 +15,11 @@ body {
   color: #ededed;
 }
 
+/* Prevent Safari pinch-to-zoom */
+html {
+  touch-action: manipulation;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
