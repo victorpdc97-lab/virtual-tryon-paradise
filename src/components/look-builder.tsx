@@ -68,7 +68,8 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
                   </div>
                   <button
                     onClick={() => removeItem(category)}
-                    className="text-white/30 hover:text-red-400 transition-colors p-1"
+                    aria-label={`Remover ${item.name}`}
+                    className="text-white/30 hover:text-red-400 transition-colors p-2.5 -mr-1"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

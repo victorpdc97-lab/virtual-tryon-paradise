@@ -53,13 +53,11 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         <button
           onClick={handleZoom}
           aria-label={`Ampliar ${product.name}`}
-          className="absolute top-1 left-1 z-10 w-11 h-11 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-90 sm:w-9 sm:h-9"
+          className="absolute top-1.5 left-1.5 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity active:scale-90 hover:bg-black/70"
         >
-          <span className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-black/80">
-            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-            </svg>
-          </span>
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+          </svg>
         </button>
 
         <div className="aspect-square bg-white/5 overflow-hidden relative">

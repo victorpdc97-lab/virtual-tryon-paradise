@@ -41,7 +41,7 @@ export function TryOnPreview() {
               style={{ objectFit: "contain", background: "#0a0a0a" }}
             />
           }
-          style={{ height: "500px" }}
+          className="h-[300px] sm:h-[400px] lg:h-[500px]"
         />
       </div>
 

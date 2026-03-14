@@ -45,9 +45,9 @@ export function MobileLookBar({ onTryOn, disabled }: MobileLookBarProps) {
                       <button
                         onClick={() => removeItem(cat)}
                         aria-label={`Remover ${item.name}`}
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center active:scale-90 hover:bg-red-400 transition-all"
+                        className="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-full bg-red-500 flex items-center justify-center active:scale-90 hover:bg-red-400 transition-all shadow-lg shadow-black/30"
                       >
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
