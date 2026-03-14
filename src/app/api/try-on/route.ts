@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { startTryOn } from "@/lib/fashn";
+import { startTryOn, waitForCompletion } from "@/lib/fashn";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { trackTryOn } from "@/lib/analytics";
@@ -17,25 +17,12 @@ interface TryOnRequestBody {
   leadEmail?: string;
 }
 
-// Stores pipeline state in memory (per-process; fine for serverless)
-const pipelines = new Map<
-  string,
-  {
-    steps: Array<{ category: string; imageUrl: string }>;
-    currentStep: number;
-    currentFashnId: string | null;
-    intermediateUrl: string | null;
-    resultUrl: string | null;
-    status: string;
-    error: string | null;
-  }
->();
+export const maxDuration = 300; // 5 min max for Vercel serverless
 
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
 
-    // Rate limiting: check per-minute + daily limits
     const rateCheck = checkRateLimit(ip);
     if (!rateCheck.allowed) {
       return NextResponse.json(
@@ -75,14 +62,6 @@ export async function POST(req: NextRequest) {
       (a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
     );
 
-    // Start first step with category hint for faster processing
-    const first = sortedItems[0];
-    const { id, error } = await startTryOn(body.photoUrl, first.imageUrl, first.category);
-
-    if (error) {
-      return NextResponse.json({ error }, { status: 500 });
-    }
-
     // Track analytics
     trackTryOn(
       body.items
@@ -90,36 +69,32 @@ export async function POST(req: NextRequest) {
         .map((item) => ({ id: item.productId!, name: item.productName || "" }))
     );
 
-    // Track lead usage
     if (body.leadEmail) {
       incrementLeadTryOn(body.leadEmail);
     }
 
-    const pipelineId = `pipeline_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    // Process ALL steps sequentially in a single request
+    let currentImage = body.photoUrl;
 
-    pipelines.set(pipelineId, {
-      steps: sortedItems,
-      currentStep: 0,
-      currentFashnId: id,
-      intermediateUrl: body.photoUrl,
-      resultUrl: null,
-      status: "processing",
-      error: null,
-    });
+    for (let i = 0; i < sortedItems.length; i++) {
+      const step = sortedItems[i];
 
-    // Cleanup old pipelines (keep last 50)
-    if (pipelines.size > 50) {
-      const keys = Array.from(pipelines.keys());
-      for (let i = 0; i < keys.length - 50; i++) {
-        pipelines.delete(keys[i]);
+      const { id, error } = await startTryOn(currentImage, step.imageUrl, step.category);
+      if (error) {
+        return NextResponse.json(
+          { error: `Erro no step ${i + 1}: ${error}` },
+          { status: 500 }
+        );
       }
+
+      // Wait for this step to complete before starting next
+      currentImage = await waitForCompletion(id);
     }
 
     return NextResponse.json({
-      pipelineId,
-      currentStep: 1,
+      status: "completed",
+      resultUrl: currentImage,
       totalSteps: sortedItems.length,
-      stepLabel: getStepLabel(first.category, 0, sortedItems),
       remaining: rateCheck.remaining,
     });
   } catch (error) {
@@ -131,15 +106,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-function getStepLabel(category: string, _stepIndex: number, _steps: Array<{ category: string }>): string {
-  const labels: Record<string, string> = {
-    tops: "Vestindo parte de cima...",
-    bottoms: "Vestindo parte de baixo...",
-    shoes: "Calçando...",
-  };
-  return labels[category] || "Processando...";
-}
-
-// Export for the status route
-export { pipelines };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import { PhotoUpload } from "@/components/photo-upload";
@@ -25,7 +25,6 @@ export default function StudioPage() {
     setPipelineStatus,
     resetPipeline,
   } = useTryOnStore();
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
@@ -44,7 +43,6 @@ export default function StudioPage() {
     if (prevStatusRef.current !== "completed" && pipeline.status === "completed") {
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 3500);
-      // Scroll to result after a brief delay
       setTimeout(() => {
         resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 300);
@@ -64,64 +62,6 @@ export default function StudioPage() {
     return () => clearInterval(timer);
   }, [retryCountdown]);
 
-  const stopPolling = useCallback(() => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-  }, []);
-
-  const startPolling = useCallback(
-    (pipelineId: string) => {
-      stopPolling();
-
-      pollingRef.current = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/try-on/${pipelineId}`);
-          const data = await res.json();
-
-          if (data.error && !data.status) {
-            setPipelineStatus({
-              status: "failed",
-              error: data.error,
-            });
-            stopPolling();
-            return;
-          }
-
-          setPipelineStatus({
-            currentStep: data.currentStep,
-            totalSteps: data.totalSteps,
-            stepLabel: data.stepLabel,
-            ...(data.intermediateUrl && { intermediateUrl: data.intermediateUrl }),
-          });
-
-          if (data.status === "completed") {
-            setPipelineStatus({
-              status: "completed",
-              resultUrl: data.resultUrl,
-              stepLabel: "Look completo!",
-            });
-            stopPolling();
-          } else if (data.status === "failed") {
-            setPipelineStatus({
-              status: "failed",
-              error: data.error || "Erro no processamento",
-            });
-            stopPolling();
-          }
-        } catch {
-          // Network error, keep polling
-        }
-      }, 1500);
-    },
-    [setPipelineStatus, stopPolling]
-  );
-
-  useEffect(() => {
-    return () => stopPolling();
-  }, [stopPolling]);
-
   const handleTryOn = async () => {
     const items = getSelectedList();
     if (!photoBlobUrl || items.length === 0) return;
@@ -131,7 +71,7 @@ export default function StudioPage() {
       status: "processing",
       currentStep: 1,
       totalSteps: items.length,
-      stepLabel: "Iniciando...",
+      stepLabel: "Processando seu look...",
     });
 
     try {
@@ -159,20 +99,21 @@ export default function StudioPage() {
         }
         setPipelineStatus({
           status: "failed",
-          error: data.error || "Erro ao iniciar try-on",
+          error: data.error || "Erro ao processar try-on",
         });
         return;
       }
 
-      setPipelineStatus({
-        jobId: data.pipelineId,
-        currentStep: data.currentStep,
-        totalSteps: data.totalSteps,
-        stepLabel: data.stepLabel,
-      });
-
+      // Response comes with final result directly (no polling needed)
       if (data.remaining !== undefined) setRemaining(data.remaining);
-      startPolling(data.pipelineId);
+
+      setPipelineStatus({
+        status: "completed",
+        resultUrl: data.resultUrl,
+        currentStep: data.totalSteps,
+        totalSteps: data.totalSteps,
+        stepLabel: "Look completo!",
+      });
     } catch {
       setPipelineStatus({
         status: "failed",
