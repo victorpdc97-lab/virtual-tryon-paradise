@@ -100,7 +100,7 @@ export function PhotoUpload() {
     <div className="space-y-3">
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
+        className={`border-2 border-dashed rounded-2xl p-6 sm:p-10 text-center cursor-pointer transition-all ${
           isDragActive
             ? "border-teal-400 bg-teal-400/5"
             : "border-white/20 hover:border-teal-400/50 hover:bg-white/[0.02]"

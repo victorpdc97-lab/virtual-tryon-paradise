@@ -69,6 +69,8 @@ export function LeadForm() {
             placeholder="Seu email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            inputMode="email"
             className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 focus:bg-white/[0.07] transition-all"
             required
           />
@@ -89,6 +91,8 @@ export function LeadForm() {
             placeholder="(00) 00000-0000"
             value={phone}
             onChange={(e) => setPhone(formatPhone(e.target.value))}
+            autoComplete="tel"
+            inputMode="tel"
             className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 focus:bg-white/[0.07] transition-all"
             required
           />

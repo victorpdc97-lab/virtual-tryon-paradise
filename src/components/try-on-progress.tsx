@@ -229,7 +229,7 @@ export function TryOnProgress() {
                     step.icon
                   )}
                 </div>
-                <p className={`text-xs transition-colors duration-300 ${
+                <p className={`text-xs sm:text-sm transition-colors duration-300 ${
                   isDone ? "text-teal-400" : isCurrent ? "text-white" : "text-white/30"
                 }`}>
                   {isDone ? step.doneLabel : step.label}
@@ -261,7 +261,7 @@ export function TryOnProgress() {
 
         {/* Fun fact */}
         {pipeline.status === "processing" && (
-          <p className="text-white/25 text-[11px] text-center italic transition-opacity duration-500">
+          <p className="text-white/25 text-xs sm:text-[11px] text-center italic transition-opacity duration-500">
             {FUN_FACTS[factIndex]}
           </p>
         )}

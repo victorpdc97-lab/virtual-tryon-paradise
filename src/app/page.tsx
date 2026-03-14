@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="border-b border-white/5 px-4 sm:px-6 py-4">
+      <header className="border-b border-white/5 px-4 sm:px-6 py-4" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-black font-bold text-sm">
@@ -40,7 +40,7 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-16">
         <div className="max-w-xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-400/10 text-teal-400 text-xs font-medium">

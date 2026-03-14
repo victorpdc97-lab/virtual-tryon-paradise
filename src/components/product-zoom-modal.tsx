@@ -34,7 +34,7 @@ export function ProductZoomModal({ product, isSelected, onSelect, onClose }: Pro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn safe-area-modal"
       onClick={onClose}
     >
       <div

@@ -63,7 +63,7 @@ export function ProductCatalog() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-white font-semibold text-lg">Catálogo Paradise</h2>
-        <span className="text-white/40 text-sm">
+        <span className="text-white/40 text-xs sm:text-sm">
           {products.length} {products.length === 1 ? "peça" : "peças"}
         </span>
       </div>
@@ -101,11 +101,13 @@ export function ProductCatalog() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {loading && products.length === 0
           ? Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-white/10 overflow-hidden animate-pulse">
-                <div className="aspect-square bg-white/[0.04]" />
+              <div key={i} className="rounded-xl border border-white/10 overflow-hidden">
+                <div className="aspect-square bg-white/[0.04] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent animate-shimmer" />
+                </div>
                 <div className="p-3 space-y-2">
                   <div className="h-4 bg-white/[0.06] rounded-lg w-3/4" />
                   <div className="h-3 bg-white/[0.04] rounded-lg w-1/2" />

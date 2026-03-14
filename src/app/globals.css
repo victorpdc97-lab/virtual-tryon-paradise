@@ -71,9 +71,13 @@ body {
   animation: slideUp 0.3s ease-out;
 }
 
-/* Safe area for mobile bottom bar */
+/* Safe area for mobile */
 .safe-area-pb {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.safe-area-modal {
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 /* Accessibility: reduce motion for users who prefer it */

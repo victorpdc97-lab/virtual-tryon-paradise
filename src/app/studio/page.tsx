@@ -191,11 +191,11 @@ export default function StudioPage() {
       {showCelebration && <Celebration />}
 
       {/* Header */}
-      <header className="border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4">
+      <header className="border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 sm:gap-3"
+            className="flex items-center gap-2 sm:gap-3 min-h-[44px]"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-black font-bold text-sm">
               P
