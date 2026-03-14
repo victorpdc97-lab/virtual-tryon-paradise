@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Product } from "@/types";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import { ProductZoomModal } from "./product-zoom-modal";
+import { showToast } from "./toast";
 
 interface ProductCardProps {
   product: Product;
@@ -28,10 +29,12 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
 
     if (isSelected) {
       removeItem(product.category);
+      showToast(`${product.name} removido`, "info");
     } else {
       selectItem(product);
       setJustSelected(true);
       setTimeout(() => setJustSelected(false), 400);
+      showToast(`${product.name} adicionado ao look`);
     }
   };
 

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import type { Product } from "@/types";
+import { showToast } from "./toast";
+import { ResultRating } from "./result-rating";
 
 function trackBuy(item: Product) {
   fetch("/api/track-buy", {
@@ -51,10 +53,9 @@ export function BuyLookCta() {
   };
 
   const handleShareInstagram = () => {
-    // Instagram doesn't support direct sharing via URL, so we copy the image URL
     if (pipeline.resultUrl) {
       navigator.clipboard.writeText(pipeline.resultUrl).then(() => {
-        alert("Link da imagem copiado! Cole nos seus Stories do Instagram.");
+        showToast("Link copiado! Cole nos seus Stories do Instagram");
       }).catch(() => {
         window.open(pipeline.resultUrl!, "_blank");
       });
@@ -149,6 +150,7 @@ export function BuyLookCta() {
                 a.download = "meu-look-paradise.jpg";
                 a.click();
                 URL.revokeObjectURL(url);
+                showToast("Imagem baixada!");
               } catch {
                 window.open(pipeline.resultUrl!, "_blank");
               }
@@ -161,6 +163,11 @@ export function BuyLookCta() {
             Baixar
           </button>
         )}
+      </div>
+
+      {/* Rating */}
+      <div className="border-t border-white/10 pt-2">
+        <ResultRating pipelineId={pipeline.jobId} />
       </div>
     </div>
   );

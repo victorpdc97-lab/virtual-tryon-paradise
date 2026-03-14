@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
+import { ToastContainer } from "@/components/toast";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${dmSans.variable} font-sans bg-[#0a0a0a] text-white antialiased`}>
         {children}
+        <ToastContainer />
       </body>
     </html>
   );
