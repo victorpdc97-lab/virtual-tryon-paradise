@@ -35,7 +35,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     <>
       <button
         onClick={handleClick}
-        className={`group relative rounded-xl overflow-hidden border transition-all duration-200 text-left active:scale-[0.97] ${
+        className={`group relative rounded-xl overflow-hidden border transition-all duration-200 text-left active:scale-95 ${
           isSelected
             ? "border-teal-400 ring-2 ring-teal-400/30 scale-[1.02]"
             : "border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-teal-400/5 hover:scale-[1.03]"

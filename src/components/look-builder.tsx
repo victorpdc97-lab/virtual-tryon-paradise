@@ -99,7 +99,7 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
           <button
             onClick={onTryOn}
             disabled={disabled}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm hover:from-teal-400 hover:to-teal-300 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm hover:from-teal-400 hover:to-teal-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             ✨ Experimentar Look
           </button>

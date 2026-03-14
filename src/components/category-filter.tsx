@@ -46,14 +46,14 @@ function CategoryIcon({ type, className }: { type: string; className?: string })
 
 export function CategoryFilter({ active, onChange }: CategoryFilterProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
       {CATEGORIES.map((cat) => (
         <button
           key={cat.id}
           onClick={() => onChange(cat.id)}
           aria-label={`Filtrar por ${cat.label}`}
           aria-pressed={active === cat.id}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all min-h-[44px] active:scale-95 ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all min-h-[44px] active:scale-95 snap-start ${
             active === cat.id
               ? "bg-teal-400 text-black"
               : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
