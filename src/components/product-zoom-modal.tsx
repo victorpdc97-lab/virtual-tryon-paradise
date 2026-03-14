@@ -38,7 +38,7 @@ export function ProductZoomModal({ product, isSelected, onSelect, onClose }: Pro
       onClick={onClose}
     >
       <div
-        className="relative bg-[#111] border border-white/10 rounded-2xl overflow-hidden w-full max-w-[92vw] sm:max-w-md max-h-[90vh] animate-scaleIn"
+        className="relative bg-[#111] border border-white/10 rounded-2xl overflow-hidden w-full max-w-[92vw] sm:max-w-md lg:max-w-2xl max-h-[90vh] animate-scaleIn lg:flex lg:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -53,7 +53,7 @@ export function ProductZoomModal({ product, isSelected, onSelect, onClose }: Pro
         </button>
 
         {/* Image */}
-        <div className="aspect-square bg-white/5">
+        <div className="aspect-square lg:aspect-auto lg:w-1/2 lg:min-h-[400px] bg-white/5 shrink-0">
           <img
             src={product.image}
             alt={product.name}
@@ -62,16 +62,16 @@ export function ProductZoomModal({ product, isSelected, onSelect, onClose }: Pro
         </div>
 
         {/* Details */}
-        <div className="p-5 space-y-4">
+        <div className="p-5 lg:p-6 space-y-4 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
           <div>
             <span className="text-teal-400 text-xs font-medium uppercase tracking-wider">
               {CATEGORY_LABELS[product.category] || product.category}
             </span>
-            <h3 className="text-white font-semibold text-lg mt-1">{product.name}</h3>
+            <h3 className="text-white font-semibold text-lg lg:text-xl mt-1">{product.name}</h3>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-teal-400 font-bold text-2xl">
+            <span className="text-teal-400 font-bold text-2xl lg:text-3xl">
               R$ {(displayPrice || 0).toFixed(2).replace(".", ",")}
             </span>
             {hasPromo && (

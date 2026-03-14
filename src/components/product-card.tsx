@@ -35,10 +35,10 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     <>
       <button
         onClick={handleClick}
-        className={`group relative rounded-xl overflow-hidden border transition-all duration-200 text-left active:scale-95 ${
+        className={`group relative rounded-xl overflow-hidden border transition-all duration-300 text-left active:scale-95 focus-visible:ring-2 focus-visible:ring-teal-400/50 focus-visible:outline-none ${
           isSelected
-            ? "border-teal-400 ring-2 ring-teal-400/30 scale-[1.02]"
-            : "border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-teal-400/5 hover:scale-[1.03]"
+            ? "border-teal-400 ring-2 ring-teal-400/30 scale-[1.02] shadow-lg shadow-teal-400/10"
+            : "border-white/10 hover:border-white/25 hover:shadow-xl hover:shadow-teal-400/10 lg:hover:scale-[1.04] hover:bg-white/[0.02]"
         }`}
       >
         {isSelected && (
@@ -65,8 +65,8 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             src={product.image}
             alt={product.name}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover group-hover:scale-110 transition-transform duration-300"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+            className="object-cover lg:group-hover:scale-110 transition-transform duration-500"
             loading="lazy"
           />
         </div>

@@ -84,7 +84,7 @@ export function PhotoUpload() {
         <img
           src={photoUrl}
           alt="Sua foto"
-          className="w-full max-h-[500px] object-contain rounded-2xl border border-white/10"
+          className="w-full max-h-[500px] lg:max-h-[600px] object-contain rounded-2xl border border-white/10"
         />
         <button
           onClick={clearPhoto}
@@ -100,10 +100,10 @@ export function PhotoUpload() {
     <div className="space-y-3">
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-2xl p-6 sm:p-10 text-center cursor-pointer transition-all ${
+        className={`border-2 border-dashed rounded-2xl p-6 sm:p-10 lg:p-14 text-center cursor-pointer transition-all duration-300 ${
           isDragActive
-            ? "border-teal-400 bg-teal-400/5"
-            : "border-white/20 hover:border-teal-400/50 hover:bg-white/[0.02]"
+            ? "border-teal-400 bg-teal-400/5 scale-[1.02] shadow-2xl shadow-teal-400/10"
+            : "border-white/20 hover:border-teal-400/50 hover:bg-white/[0.02] lg:hover:shadow-lg lg:hover:shadow-teal-400/5"
         } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
       >
         <input {...getInputProps()} />

@@ -20,7 +20,7 @@ export function TryOnPreview() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+      <h3 className="text-white font-semibold text-lg lg:text-xl flex items-center gap-2">
         <span className="text-xl">👀</span>
         Resultado — Antes & Depois
       </h3>
@@ -41,11 +41,11 @@ export function TryOnPreview() {
               style={{ objectFit: "contain", background: "#0a0a0a" }}
             />
           }
-          className="h-[300px] sm:h-[400px] lg:h-[500px]"
+          className="h-[300px] sm:h-[400px] lg:h-[600px] xl:h-[700px]"
         />
       </div>
 
-      <div className="flex justify-between text-xs text-white/30 px-2">
+      <div className="flex justify-between text-xs lg:text-sm text-white/30 px-2">
         <span>← Foto original</span>
         <span>Arraste para comparar</span>
         <span>Com o look →</span>

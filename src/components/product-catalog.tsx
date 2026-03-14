@@ -62,7 +62,7 @@ export function ProductCatalog() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-white font-semibold text-lg">Catálogo Paradise</h2>
+        <h2 className="text-white font-semibold text-lg lg:text-xl">Catálogo Paradise</h2>
         <span className="text-white/40 text-xs sm:text-sm">
           {products.length} {products.length === 1 ? "peça" : "peças"}
         </span>
@@ -101,7 +101,7 @@ export function ProductCatalog() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
         {loading && products.length === 0
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="rounded-xl border border-white/10 overflow-hidden">
