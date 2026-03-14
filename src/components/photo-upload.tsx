@@ -100,10 +100,10 @@ export function PhotoUpload() {
     <div className="space-y-3">
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-2xl p-6 sm:p-10 lg:p-14 text-center cursor-pointer transition-all duration-300 ${
+        className={`border-2 border-dashed rounded-xl p-6 sm:p-10 lg:p-14 text-center cursor-pointer transition-all duration-200 ${
           isDragActive
-            ? "border-teal-400 bg-teal-400/5 scale-[1.02] shadow-2xl shadow-teal-400/10"
-            : "border-white/20 hover:border-teal-400/50 hover:bg-white/[0.02] lg:hover:shadow-lg lg:hover:shadow-teal-400/5"
+            ? "border-teal-400 bg-teal-400/5"
+            : "border-white/20 hover:border-white/30 hover:bg-white/[0.02]"
         } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
       >
         <input {...getInputProps()} />

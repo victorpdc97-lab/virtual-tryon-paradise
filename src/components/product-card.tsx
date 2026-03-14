@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState, useRef } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
 import type { Product } from "@/types";
 import { useTryOnStore } from "@/store/use-tryon-store";
@@ -16,17 +16,8 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   const isSelected = selectedItems[product.category]?.id === product.id;
   const [showZoom, setShowZoom] = useState(false);
   const [justSelected, setJustSelected] = useState(false);
-  const [ripple, setRipple] = useState<{ x: number; y: number } | null>(null);
-  const cardRef = useRef<HTMLButtonElement>(null);
 
-  const handleClick = (e?: React.MouseEvent) => {
-    // Ripple effect
-    if (e && cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      setRipple({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-      setTimeout(() => setRipple(null), 600);
-    }
-
+  const handleClick = () => {
     if (isSelected) {
       removeItem(product.category);
       showToast(`${product.name} removido`, "info");
@@ -49,7 +40,6 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   return (
     <>
       <button
-        ref={cardRef}
         onClick={handleClick}
         className={`group relative rounded-xl overflow-hidden border transition-all duration-300 text-left active:scale-95 focus-visible:ring-2 focus-visible:ring-teal-400/50 focus-visible:outline-none ${
           isSelected
@@ -65,19 +55,11 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
           </div>
         )}
 
-        {/* Ripple effect */}
-        {ripple && (
-          <div
-            className="absolute z-20 w-8 h-8 rounded-full bg-teal-400/30 animate-ripple pointer-events-none"
-            style={{ left: ripple.x - 16, top: ripple.y - 16 }}
-          />
-        )}
-
         {/* Zoom button — min 44x44 touch target */}
         <button
           onClick={handleZoom}
           aria-label={`Ampliar ${product.name}`}
-          className="absolute top-1.5 left-1.5 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity active:scale-90 hover:bg-black/70"
+          className="absolute top-1.5 left-1.5 z-10 w-9 h-9 rounded-full bg-black/70 flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity active:scale-90 hover:bg-black/90"
         >
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
@@ -90,7 +72,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-            className="object-cover lg:group-hover:scale-110 transition-transform duration-500"
+            className="object-cover lg:group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             placeholder="empty"
           />
@@ -115,7 +97,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         <ProductZoomModal
           product={product}
           isSelected={isSelected}
-          onSelect={() => handleClick()}
+          onSelect={handleClick}
           onClose={() => setShowZoom(false)}
         />
       )}

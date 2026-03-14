@@ -17,13 +17,13 @@ export function Celebration() {
   const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
-    const items: Particle[] = Array.from({ length: 40 }, (_, i) => ({
+    const items: Particle[] = Array.from({ length: 15 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
-      delay: Math.random() * 0.5,
-      duration: 1.5 + Math.random() * 1.5,
+      delay: Math.random() * 0.3,
+      duration: 2,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      size: 4 + Math.random() * 8,
+      size: 4 + Math.random() * 6,
     }));
     setParticles(items);
 
@@ -51,7 +51,7 @@ export function Celebration() {
             width: `${p.size}px`,
             height: `${p.size}px`,
             backgroundColor: p.color,
-            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            borderRadius: "2px",
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
           }}

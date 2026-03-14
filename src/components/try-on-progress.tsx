@@ -146,21 +146,13 @@ export function TryOnProgress() {
           )}
 
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
-
-          {/* Scanning line animation */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-transparent animate-scan opacity-60" />
-          </div>
-
-          {/* Shimmer overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent animate-shimmer" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
           {/* Top badge — intermediate result indicator */}
           {pipeline.intermediateUrl && (
-            <div className="absolute top-3 left-3 bg-teal-400/20 backdrop-blur-sm border border-teal-400/30 rounded-full px-3 py-1 flex items-center gap-1.5 animate-scaleIn">
+            <div className="absolute top-3 left-3 bg-black/70 border border-white/10 rounded-full px-3 py-1 flex items-center gap-1.5 animate-scaleIn">
               <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-              <span className="text-teal-300 text-[10px] font-medium">
+              <span className="text-white/70 text-[10px] font-medium">
                 Resultado parcial
               </span>
             </div>
@@ -168,15 +160,11 @@ export function TryOnProgress() {
 
           {/* Center — spinner + tip */}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6">
-            {/* Spinner with glow */}
-            <div className="relative">
-              <div className="w-14 h-14 rounded-full bg-teal-400/10 border-2 border-teal-400 border-t-transparent animate-spin" role="status" aria-label="Processando look" />
-              <div className="absolute inset-0 w-14 h-14 rounded-full bg-teal-400/5 blur-xl" />
-            </div>
+            <div className="w-12 h-12 rounded-full border-2 border-teal-400 border-t-transparent animate-spin" role="status" aria-label="Processando look" />
 
             {/* Rotating tip */}
             <p
-              className={`text-white/90 text-sm text-center font-medium max-w-[200px] transition-opacity duration-300 ${
+              className={`text-white/80 text-sm text-center font-medium max-w-[200px] transition-opacity duration-300 ${
                 tipFading ? "opacity-0" : "opacity-100"
               }`}
             >
@@ -185,8 +173,8 @@ export function TryOnProgress() {
           </div>
 
           {/* Bottom — timer */}
-          <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
-            <span className="text-white/60 text-xs font-mono">
+          <div className="absolute bottom-3 right-3 bg-black/80 rounded-full px-3 py-1">
+            <span className="text-white/50 text-xs font-mono">
               {formatTime(elapsedSeconds)}
             </span>
           </div>
@@ -194,7 +182,7 @@ export function TryOnProgress() {
       )}
 
       {/* Steps + Progress card */}
-      <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 space-y-4">
+      <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
