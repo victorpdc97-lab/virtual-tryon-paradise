@@ -52,7 +52,7 @@ export function LeadForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto w-full">
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-sm lg:max-w-md mx-auto w-full">
       <div className="space-y-3">
         <div className="relative">
           <svg
@@ -106,7 +106,7 @@ export function LeadForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm hover:from-teal-400 hover:to-teal-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3.5 lg:py-4 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm lg:text-base hover:from-teal-400 hover:to-teal-300 hover:shadow-lg hover:shadow-teal-400/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Carregando..." : "Continuar"}
       </button>

@@ -226,7 +226,7 @@ export default function StudioPage() {
       </header>
 
       {/* Studio Layout - Desktop: 3 columns, Mobile: stacked */}
-      <div className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 pb-24 lg:pb-6">
+      <div className="flex-1 max-w-7xl xl:max-w-[1400px] mx-auto w-full p-4 sm:p-6 pb-24 lg:pb-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
 
           {/* Photo + Result — full width on mobile, left col on desktop */}

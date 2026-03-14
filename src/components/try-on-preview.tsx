@@ -74,6 +74,7 @@ export function TryOnPreview() {
                 />
               }
               className="h-[300px] sm:h-[400px] lg:h-[600px] xl:h-[700px]"
+              title="Arraste o slider para comparar"
             />
           </div>
           <div className="flex justify-between text-xs lg:text-sm text-white/30 px-2">
@@ -97,7 +98,24 @@ export function TryOnPreview() {
             <img
               src={pipeline.resultUrl}
               alt="Depois - com look"
-              className="w-full h-[250px] sm:h-[350px] lg:h-[550px] xl:h-[650px] object-contain"
+              className="w-full h-[250px] sm:h-[350px] lg:h-[550px] xl:h-[650px] object-contain cursor-pointer"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                const a = document.createElement("a");
+                a.href = pipeline.resultUrl!;
+                a.download = "meu-look-paradise.jpg";
+                a.target = "_blank";
+                fetch(pipeline.resultUrl!)
+                  .then((res) => res.blob())
+                  .then((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    a.href = url;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  })
+                  .catch(() => window.open(pipeline.resultUrl!, "_blank"));
+              }}
+              title="Clique com botão direito para baixar"
             />
           </div>
         </div>

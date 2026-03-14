@@ -53,10 +53,11 @@ export function CategoryFilter({ active, onChange }: CategoryFilterProps) {
           onClick={() => onChange(cat.id)}
           aria-label={`Filtrar por ${cat.label}`}
           aria-pressed={active === cat.id}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all min-h-[44px] active:scale-95 snap-start ${
+          title={`Filtrar por ${cat.label}`}
+          className={`flex items-center gap-2 px-4 lg:px-5 py-2.5 rounded-full text-sm lg:text-base font-medium whitespace-nowrap transition-all min-h-[44px] active:scale-95 snap-start ${
             active === cat.id
-              ? "bg-teal-400 text-black"
-              : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+              ? "bg-teal-400 text-black shadow-lg shadow-teal-400/20"
+              : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white hover:shadow-md"
           }`}
         >
           <CategoryIcon type={cat.icon} className="w-4 h-4" />

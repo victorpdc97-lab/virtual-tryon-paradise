@@ -47,14 +47,14 @@ export default function Home() {
               <div className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
               Powered by AI
             </div>
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-5xl xl:text-6xl font-bold tracking-tight">
               Experimente antes
               <br />
               <span className="bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent">
                 de comprar
               </span>
             </h1>
-            <p className="text-white/50 text-base sm:text-lg max-w-md mx-auto">
+            <p className="text-white/50 text-base sm:text-lg xl:text-xl max-w-md xl:max-w-lg mx-auto">
               Envie uma foto de corpo inteiro e veja como as roupas da Paradise
               ficam em você. Tudo com inteligência artificial.
             </p>
@@ -67,7 +67,7 @@ export default function Home() {
             <PhotoUpload />
           )}
 
-          <div className="flex items-center justify-center gap-6 sm:gap-8 text-white/20 text-xs">
+          <div className="flex items-center justify-center gap-6 sm:gap-8 text-white/20 text-xs lg:text-sm">
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
