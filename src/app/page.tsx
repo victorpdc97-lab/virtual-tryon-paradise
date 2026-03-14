@@ -45,7 +45,7 @@ export default function Home() {
           <div className="space-y-5 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs font-medium">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              Paradise Multimarcas
+              Paradise
             </div>
             <h1 className="text-3xl sm:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.1]">
               Veja como fica

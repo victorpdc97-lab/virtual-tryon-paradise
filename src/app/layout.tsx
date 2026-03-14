@@ -11,11 +11,11 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Provador Virtual | Paradise Multimarcas",
+  title: "Provador Virtual | Paradise",
   description:
-    "Experimente roupas da Paradise Multimarcas com inteligência artificial. Veja como o look fica em você antes de comprar.",
+    "Experimente roupas da Paradise com o provador virtual. Veja como o look fica em você antes de comprar.",
   openGraph: {
-    title: "Provador Virtual | Paradise Multimarcas",
+    title: "Provador Virtual | Paradise",
     description: "Experimente roupas com IA — veja o look no seu corpo",
     type: "website",
   },
