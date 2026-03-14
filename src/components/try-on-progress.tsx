@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useTryOnStore } from "@/store/use-tryon-store";
 
 const TIPS = [
@@ -24,6 +24,8 @@ export function TryOnProgress() {
   const [tipIndex, setTipIndex] = useState(0);
   const [factIndex, setFactIndex] = useState(0);
   const [tipFading, setTipFading] = useState(false);
+  const [milestoneHit, setMilestoneHit] = useState<number | null>(null);
+  const lastMilestoneRef = useRef(0);
   const startTimeRef = useRef(Date.now());
 
   // Timer
@@ -62,6 +64,19 @@ export function TryOnProgress() {
     }, 8000);
     return () => clearInterval(interval);
   }, [pipeline.status]);
+
+  // Milestone detection
+  const checkMilestone = useCallback((percent: number) => {
+    const milestones = [25, 50, 75, 100];
+    for (const m of milestones) {
+      if (percent >= m && lastMilestoneRef.current < m) {
+        lastMilestoneRef.current = m;
+        setMilestoneHit(m);
+        setTimeout(() => setMilestoneHit(null), 1000);
+        break;
+      }
+    }
+  }, []);
 
   if (pipeline.status === "idle") return null;
 
@@ -247,7 +262,7 @@ export function TryOnProgress() {
         </div>
 
         {/* Animated progress bar */}
-        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden relative">
           <div
             className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
               progressPercent >= 100 ? "shadow-[0_0_12px_rgba(10,186,181,0.5)]" : ""
@@ -256,9 +271,14 @@ export function TryOnProgress() {
               width: `${progressPercent}%`,
               background: "linear-gradient(90deg, #099e9a, #0abab5, #0eded8)",
             }}
+            ref={(el) => { if (el) checkMilestone(progressPercent); }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
           </div>
+          {/* Milestone flash */}
+          {milestoneHit && (
+            <div className="absolute inset-0 bg-teal-400/20 rounded-full animate-milestoneFlash" />
+          )}
         </div>
 
         {/* Fun fact */}

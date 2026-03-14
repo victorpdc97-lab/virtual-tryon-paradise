@@ -79,6 +79,31 @@ body {
   animation: slideInUp 0.3s ease-out;
 }
 
+@keyframes checkPop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-checkPop {
+  animation: checkPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.4; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.animate-ripple {
+  animation: ripple 0.6s ease-out forwards;
+}
+
+@keyframes milestoneFlash {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+.animate-milestoneFlash {
+  animation: milestoneFlash 0.8s ease-out;
+}
+
 /* Focus-visible for keyboard navigation */
 button:focus-visible,
 a:focus-visible,

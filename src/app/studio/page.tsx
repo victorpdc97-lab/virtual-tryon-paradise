@@ -31,6 +31,7 @@ export default function StudioPage() {
   const [retryCountdown, setRetryCountdown] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const prevStatusRef = useRef(pipeline.status);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!photoUrl) {
@@ -38,11 +39,15 @@ export default function StudioPage() {
     }
   }, [photoUrl, router]);
 
-  // Trigger celebration when status changes to completed
+  // Trigger celebration + scroll to result when status changes to completed
   useEffect(() => {
     if (prevStatusRef.current !== "completed" && pipeline.status === "completed") {
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 3500);
+      // Scroll to result after a brief delay
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
     }
     prevStatusRef.current = pipeline.status;
   }, [pipeline.status]);
@@ -253,10 +258,10 @@ export default function StudioPage() {
               </div>
             )}
             {isCompleted && (
-              <>
+              <div ref={resultRef}>
                 <TryOnPreview />
                 <BuyLookCta />
-              </>
+              </div>
             )}
           </div>
 

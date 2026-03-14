@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useRef } from "react";
 import Image from "next/image";
 import type { Product } from "@/types";
 import { useTryOnStore } from "@/store/use-tryon-store";
@@ -14,12 +14,24 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   const { selectedItems, selectItem, removeItem } = useTryOnStore();
   const isSelected = selectedItems[product.category]?.id === product.id;
   const [showZoom, setShowZoom] = useState(false);
+  const [justSelected, setJustSelected] = useState(false);
+  const [ripple, setRipple] = useState<{ x: number; y: number } | null>(null);
+  const cardRef = useRef<HTMLButtonElement>(null);
 
-  const handleClick = () => {
+  const handleClick = (e?: React.MouseEvent) => {
+    // Ripple effect
+    if (e && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setRipple({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      setTimeout(() => setRipple(null), 600);
+    }
+
     if (isSelected) {
       removeItem(product.category);
     } else {
       selectItem(product);
+      setJustSelected(true);
+      setTimeout(() => setJustSelected(false), 400);
     }
   };
 
@@ -34,6 +46,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   return (
     <>
       <button
+        ref={cardRef}
         onClick={handleClick}
         className={`group relative rounded-xl overflow-hidden border transition-all duration-300 text-left active:scale-95 focus-visible:ring-2 focus-visible:ring-teal-400/50 focus-visible:outline-none ${
           isSelected
@@ -42,11 +55,19 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         }`}
       >
         {isSelected && (
-          <div className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center">
+          <div className={`absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-teal-400 flex items-center justify-center ${justSelected ? "animate-checkPop" : ""}`}>
             <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
+        )}
+
+        {/* Ripple effect */}
+        {ripple && (
+          <div
+            className="absolute z-20 w-8 h-8 rounded-full bg-teal-400/30 animate-ripple pointer-events-none"
+            style={{ left: ripple.x - 16, top: ripple.y - 16 }}
+          />
         )}
 
         {/* Zoom button — min 44x44 touch target */}
@@ -90,7 +111,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         <ProductZoomModal
           product={product}
           isSelected={isSelected}
-          onSelect={handleClick}
+          onSelect={() => handleClick()}
           onClose={() => setShowZoom(false)}
         />
       )}
