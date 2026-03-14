@@ -61,7 +61,16 @@ function matchKeywords(text: string): GarmentCategory | null {
   return null;
 }
 
+// Categories to exclude entirely (products in these categories are skipped)
+const CATEGORY_BLACKLIST_RE = /oportunidade|outlet|promoç|promoca|liquidaç|liquidaca|desapego/i;
+
 function detectCategory(product: NuvemshopProduct): GarmentCategory | null {
+  // Skip products that belong to blacklisted categories
+  for (const cat of product.categories) {
+    const catName = (cat.name?.pt || "").toLowerCase();
+    if (CATEGORY_BLACKLIST_RE.test(catName)) return null;
+  }
+
   // Check CATEGORY_MAP first
   for (const cat of product.categories) {
     if (CATEGORY_MAP[cat.id]) return CATEGORY_MAP[cat.id];
