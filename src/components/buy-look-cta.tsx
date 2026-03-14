@@ -63,7 +63,7 @@ export function BuyLookCta() {
 
   return (
     <div className="bg-gradient-to-br from-teal-400/10 to-teal-600/5 border border-teal-400/20 rounded-2xl p-6 space-y-4">
-      <h3 className="text-white font-semibold text-lg">Gostou do look?</h3>
+      <h3 className="text-white font-semibold text-lg lg:text-xl">Gostou do look?</h3>
 
       <div className="space-y-3">
         {items.map((item) => (
@@ -95,8 +95,8 @@ export function BuyLookCta() {
       </div>
 
       <div className="border-t border-white/10 pt-3 flex justify-between items-center">
-        <span className="text-white/40 text-sm">Total do look</span>
-        <span className="text-teal-400 font-bold text-lg">
+        <span className="text-white/40 text-sm">Total do look ({items.length} {items.length === 1 ? "peça" : "peças"})</span>
+        <span className="text-teal-400 font-bold text-lg lg:text-xl">
           R$ {(totalPrice || 0).toFixed(2).replace(".", ",")}
         </span>
       </div>
@@ -105,7 +105,7 @@ export function BuyLookCta() {
       <div className="flex gap-3">
         <button
           onClick={handleBuyAll}
-          className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm text-center hover:from-teal-400 hover:to-teal-300 transition-all active:scale-[0.97]"
+          className="flex-1 py-3.5 lg:py-4 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm lg:text-base text-center hover:from-teal-400 hover:to-teal-300 transition-all active:scale-95 hover:shadow-lg hover:shadow-teal-400/20"
         >
           Comprar Tudo
         </button>
@@ -118,7 +118,7 @@ export function BuyLookCta() {
       </div>
 
       {/* Share + Download */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 lg:gap-3">
         <button
           onClick={handleShareWhatsApp}
           className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] text-sm font-medium hover:bg-[#25D366]/20 transition-all"

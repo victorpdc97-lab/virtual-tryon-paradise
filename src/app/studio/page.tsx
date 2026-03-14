@@ -203,6 +203,25 @@ export default function StudioPage() {
             <span className="text-white/80 font-semibold text-sm sm:text-base">Paradise</span>
             <span className="text-white/20 text-xs sm:text-sm">Studio</span>
           </button>
+
+          {/* Desktop breadcrumbs */}
+          <div className="hidden lg:flex items-center gap-2 text-sm text-white/30">
+            <span className="hover:text-white/50 cursor-pointer transition-colors" onClick={() => router.push("/")}>Início</span>
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            <span className="text-white/60">Studio</span>
+            {isProcessing && (
+              <>
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                <span className="text-teal-400">Processando...</span>
+              </>
+            )}
+            {isCompleted && (
+              <>
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                <span className="text-teal-400">Resultado</span>
+              </>
+            )}
+          </div>
         </div>
       </header>
 

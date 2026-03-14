@@ -27,6 +27,16 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
     return sum;
   })();
 
+  const totalOriginal = (() => {
+    let sum = 0;
+    if (selectedItems.tops) sum += selectedItems.tops.price ?? 0;
+    if (selectedItems.bottoms) sum += selectedItems.bottoms.price ?? 0;
+    if (selectedItems.shoes) sum += selectedItems.shoes.price ?? 0;
+    return sum;
+  })();
+
+  const savings = totalOriginal - totalPrice;
+
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4">
       <h3 className="text-white font-semibold flex items-center gap-2">
@@ -45,10 +55,10 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
           return (
             <div
               key={category}
-              className={`flex items-center gap-3 rounded-xl p-3 transition-all ${
+              className={`flex items-center gap-3 rounded-xl p-3 transition-all duration-300 ${
                 item
-                  ? "bg-teal-400/5 border border-teal-400/20"
-                  : "bg-white/[0.02] border border-dashed border-white/10"
+                  ? "bg-teal-400/5 border border-teal-400/20 hover:bg-teal-400/10"
+                  : "bg-white/[0.02] border border-dashed border-white/10 hover:border-white/20"
               }`}
             >
               {item ? (
@@ -62,9 +72,16 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-white/80 text-sm truncate">{item.name}</p>
-                    <p className="text-teal-400 text-xs">
-                      R$ {(item.promoPrice ?? item.price ?? 0).toFixed(2).replace(".", ",")}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-teal-400 text-xs">
+                        R$ {(item.promoPrice ?? item.price ?? 0).toFixed(2).replace(".", ",")}
+                      </p>
+                      {item.promoPrice !== null && item.promoPrice < (item.price ?? 0) && (
+                        <span className="text-[10px] bg-teal-400/15 text-teal-400 px-1.5 py-0.5 rounded-full font-medium">
+                          Promo
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={() => removeItem(category)}
@@ -89,11 +106,21 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
 
       {count > 0 && (
         <div className="pt-2 border-t border-white/5">
-          <div className="flex justify-between text-sm mb-4">
-            <span className="text-white/40">Total do look</span>
-            <span className="text-white font-semibold">
-              R$ {(totalPrice || 0).toFixed(2).replace(".", ",")}
-            </span>
+          <div className="space-y-1 mb-4">
+            <div className="flex justify-between text-sm">
+              <span className="text-white/40">Total do look</span>
+              <span className="text-white font-semibold">
+                R$ {(totalPrice || 0).toFixed(2).replace(".", ",")}
+              </span>
+            </div>
+            {savings > 0 && (
+              <div className="flex justify-between text-xs">
+                <span className="text-teal-400/60">Economia</span>
+                <span className="text-teal-400 font-medium">
+                  -R$ {savings.toFixed(2).replace(".", ",")}
+                </span>
+              </div>
+            )}
           </div>
 
           <button

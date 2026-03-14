@@ -96,8 +96,18 @@ export function ProductCatalog() {
       )}
 
       {!loading && products.length === 0 && !error && (
-        <div className="text-center py-12 text-white/40">
-          <p>Nenhum produto encontrado nesta categoria</p>
+        <div className="text-center py-16 lg:py-24 text-white/40">
+          <div className="text-5xl mb-4">🔍</div>
+          <p className="text-base lg:text-lg mb-2">Nenhum produto encontrado</p>
+          <p className="text-sm text-white/25">Tente outra categoria ou limpe a busca</p>
+          {category !== "all" && (
+            <button
+              onClick={() => setCategory("all")}
+              className="mt-4 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 text-sm hover:bg-white/10 hover:text-white/70 transition-all"
+            >
+              Ver todos os produtos
+            </button>
+          )}
         </div>
       )}
 

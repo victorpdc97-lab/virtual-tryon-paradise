@@ -79,6 +79,15 @@ body {
   animation: slideInUp 0.3s ease-out;
 }
 
+/* Focus-visible for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid #0abab5;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
 /* Safe area for mobile */
 .safe-area-pb {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));

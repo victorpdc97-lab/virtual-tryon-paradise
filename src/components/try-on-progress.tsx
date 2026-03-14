@@ -249,7 +249,9 @@ export function TryOnProgress() {
         {/* Animated progress bar */}
         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
+            className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
+              progressPercent >= 100 ? "shadow-[0_0_12px_rgba(10,186,181,0.5)]" : ""
+            }`}
             style={{
               width: `${progressPercent}%`,
               background: "linear-gradient(90deg, #099e9a, #0abab5, #0eded8)",
