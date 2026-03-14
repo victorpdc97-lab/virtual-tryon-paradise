@@ -32,7 +32,6 @@ export async function startTryOn(
       inputs: {
         model_image: modelImageUrl,
         product_image: garmentImageUrl,
-        category: category ? mapCategory(category) : "auto",
         output_format: "jpeg",
       },
     }),
