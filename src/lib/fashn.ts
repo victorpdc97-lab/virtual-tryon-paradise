@@ -33,6 +33,7 @@ export async function startTryOn(
         model_image: modelImageUrl,
         product_image: garmentImageUrl,
         output_format: "jpeg",
+        num_images: 1,
       },
     }),
   });
