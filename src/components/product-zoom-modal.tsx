@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { Product } from "@/types";
 
 interface ProductZoomModalProps {
@@ -19,15 +19,42 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function ProductZoomModal({ product, isSelected, onSelect, onClose }: ProductZoomModalProps) {
   const displayPrice = product.promoPrice ?? product.price ?? 0;
   const hasPromo = product.promoPrice !== null && product.promoPrice < (product.price ?? 0);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+
+      // Focus trap
+      if (e.key === "Tab" && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }
+      }
     };
-    document.addEventListener("keydown", handleEsc);
+    document.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
+
+    // Auto-focus close button
+    const closeBtn = modalRef.current?.querySelector<HTMLElement>("button");
+    closeBtn?.focus();
+
     return () => {
-      document.removeEventListener("keydown", handleEsc);
+      document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
   }, [onClose]);
@@ -38,6 +65,10 @@ export function ProductZoomModal({ product, isSelected, onSelect, onClose }: Pro
       onClick={onClose}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detalhes de ${product.name}`}
         className="relative bg-[#111] border border-white/10 rounded-2xl overflow-hidden w-full max-w-[92vw] sm:max-w-md lg:max-w-2xl max-h-[90vh] animate-scaleIn lg:flex lg:flex-row"
         onClick={(e) => e.stopPropagation()}
       >

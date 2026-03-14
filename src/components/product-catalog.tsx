@@ -14,6 +14,7 @@ export function ProductCatalog() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const fetchProducts = useCallback(
     async (pageNum: number, cat: GarmentCategory | "all", searchTerm: string, append = false) => {
@@ -53,11 +54,30 @@ export function ProductCatalog() {
     }, 300);
   };
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
+    if (loading || !hasMore) return;
     const nextPage = page + 1;
     setPage(nextPage);
     fetchProducts(nextPage, category, search, true);
-  };
+  }, [loading, hasMore, page, category, search, fetchProducts]);
+
+  // Infinite scroll with IntersectionObserver
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
 
   return (
     <div className="space-y-4">
@@ -129,19 +149,13 @@ export function ProductCatalog() {
             ))}
       </div>
 
-      {loading && products.length > 0 && (
-        <div className="flex justify-center py-6">
-          <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+      {/* Infinite scroll trigger + loading indicator */}
+      {hasMore && products.length > 0 && (
+        <div ref={loadMoreRef} className="flex justify-center py-6">
+          {loading && (
+            <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+          )}
         </div>
-      )}
-
-      {hasMore && !loading && products.length > 0 && (
-        <button
-          onClick={loadMore}
-          className="w-full py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all text-sm active:scale-[0.98]"
-        >
-          Carregar mais
-        </button>
       )}
     </div>
   );

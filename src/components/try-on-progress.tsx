@@ -129,7 +129,7 @@ export function TryOnProgress() {
   const previewImage = pipeline.intermediateUrl || photoUrl;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" role="status" aria-busy={pipeline.status === "processing"} aria-label={pipeline.status === "processing" ? "Processando seu look" : pipeline.status === "completed" ? "Look pronto" : undefined}>
       {/* Preview with intermediate results */}
       {pipeline.status === "processing" && (
         <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white/[0.03] border border-white/10">

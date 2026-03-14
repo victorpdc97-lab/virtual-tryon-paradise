@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const STEPS = [
   {
@@ -25,6 +25,7 @@ const STORAGE_KEY = "paradise-onboarding-done";
 export function Onboarding() {
   const [show, setShow] = useState(false);
   const [step, setStep] = useState(0);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -36,14 +37,39 @@ export function Onboarding() {
     }
   }, []);
 
-  // Close on Escape key
+  // Keyboard handling + focus trap
   useEffect(() => {
     if (!show) return;
+
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleDismiss();
+
+      if (e.key === "Tab" && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, [tabindex]:not([tabindex="-1"])'
+        );
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+        }
+      }
     };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    // Auto-focus first button
+    const firstBtn = modalRef.current?.querySelector<HTMLElement>("button");
+    firstBtn?.focus();
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
   });
 
   const handleDismiss = () => {
@@ -68,7 +94,13 @@ export function Onboarding() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn safe-area-modal">
       {/* Mobile: carousel | Desktop: all steps visible */}
-      <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-sm lg:max-w-2xl p-8 text-center animate-scaleIn">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Como funciona o provador virtual"
+        className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-sm lg:max-w-2xl p-8 text-center animate-scaleIn"
+      >
         {/* Step indicator — mobile only */}
         <div className="flex justify-center gap-2 mb-6 lg:hidden">
           {STEPS.map((_, i) => (

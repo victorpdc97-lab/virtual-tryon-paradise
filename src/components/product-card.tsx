@@ -89,6 +89,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
             className="object-cover lg:group-hover:scale-110 transition-transform duration-500"
             loading="lazy"
+            placeholder="empty"
           />
         </div>
 
