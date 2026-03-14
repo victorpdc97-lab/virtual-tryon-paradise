@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   title: "Provador Virtual | Paradise",
   description:
     "Experimente roupas da Paradise com o provador virtual. Veja como o look fica em você antes de comprar.",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
   openGraph: {
     title: "Provador Virtual | Paradise",
     description: "Experimente roupas com IA — veja o look no seu corpo",
