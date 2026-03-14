@@ -71,7 +71,7 @@ export function LeadForm() {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             inputMode="email"
-            className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 focus:bg-white/[0.07] transition-all"
+            className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-base placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 focus:bg-white/[0.07] transition-all"
             required
           />
         </div>
@@ -93,7 +93,7 @@ export function LeadForm() {
             onChange={(e) => setPhone(formatPhone(e.target.value))}
             autoComplete="tel"
             inputMode="tel"
-            className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 focus:bg-white/[0.07] transition-all"
+            className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-base placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 focus:bg-white/[0.07] transition-all"
             required
           />
         </div>
