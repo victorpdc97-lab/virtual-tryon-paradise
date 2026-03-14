@@ -4,18 +4,18 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useTryOnStore } from "@/store/use-tryon-store";
 
 const TIPS = [
-  "A IA está analisando seu corpo...",
-  "Ajustando o caimento da roupa...",
-  "Aplicando iluminação natural...",
-  "Refinando os detalhes...",
-  "Quase lá! Finalizando seu look...",
+  "Analisando proporções do seu corpo...",
+  "Ajustando o caimento da peça...",
+  "Calibrando iluminação e cores...",
+  "Refinando os detalhes finais...",
+  "Quase lá, finalizando...",
 ];
 
 const FUN_FACTS = [
   "Cada peça é ajustada individualmente ao seu corpo",
-  "A IA analisa proporções e iluminação da sua foto",
-  "O resultado fica mais natural com fotos de corpo inteiro",
-  "Você pode experimentar combinações diferentes",
+  "A iluminação da foto é usada para um resultado mais natural",
+  "Fotos de corpo inteiro dão os melhores resultados",
+  "Você pode experimentar quantas combinações quiser",
 ];
 
 export function TryOnProgress() {
@@ -93,19 +93,19 @@ export function TryOnProgress() {
       // 3 steps with overlay: base + blazer + bottom
       // 2 steps with overlay: base + blazer
       const overlaySteps = [
-        { label: "Vestindo base...", icon: "👕", doneLabel: "Base pronta" },
-        { label: "Aplicando blazer...", icon: "🧥", doneLabel: "Blazer aplicado" },
-        { label: "Vestindo parte de baixo...", icon: "👖", doneLabel: "Parte de baixo pronta" },
-        { label: "Calçando...", icon: "👟", doneLabel: "Calçado pronto" },
+        { label: "Vestindo base...", num: 1, doneLabel: "Base pronta" },
+        { label: "Aplicando blazer...", num: 2, doneLabel: "Blazer aplicado" },
+        { label: "Vestindo parte de baixo...", num: 3, doneLabel: "Parte de baixo pronta" },
+        { label: "Calçando...", num: 4, doneLabel: "Calçado pronto" },
       ];
       return overlaySteps.slice(0, pipeline.totalSteps);
     }
 
     // Normal pipeline: top + bottom + shoes
     const normalSteps = [
-      { label: "Vestindo parte de cima...", icon: "👕", doneLabel: "Parte de cima pronta" },
-      { label: "Vestindo parte de baixo...", icon: "👖", doneLabel: "Parte de baixo pronta" },
-      { label: "Calçando...", icon: "👟", doneLabel: "Calçado pronto" },
+      { label: "Vestindo parte de cima...", num: 1, doneLabel: "Parte de cima pronta" },
+      { label: "Vestindo parte de baixo...", num: 2, doneLabel: "Parte de baixo pronta" },
+      { label: "Calçando...", num: 3, doneLabel: "Calçado pronto" },
     ];
     return normalSteps.slice(0, pipeline.totalSteps);
   };
@@ -202,7 +202,7 @@ export function TryOnProgress() {
               <div className="w-5 h-5 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
             )}
             <h3 className="text-white font-semibold text-sm">
-              {pipeline.status === "processing" && "Criando seu look com IA..."}
+              {pipeline.status === "processing" && "Processando seu look..."}
               {pipeline.status === "completed" && "Look pronto!"}
               {pipeline.status === "failed" && "Erro no processamento"}
             </h3>
@@ -241,7 +241,7 @@ export function TryOnProgress() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    step.icon
+                    <span className="text-[10px] font-bold">{step.num}</span>
                   )}
                 </div>
                 <p className={`text-xs sm:text-sm transition-colors duration-300 ${

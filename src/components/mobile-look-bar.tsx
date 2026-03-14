@@ -9,11 +9,18 @@ interface MobileLookBarProps {
   disabled?: boolean;
 }
 
-const SLOT_ICONS: Record<GarmentCategory, string> = {
-  tops: "👕",
-  bottoms: "👖",
-  shoes: "👟",
-};
+function SlotSvg({ type }: { type: string }) {
+  switch (type) {
+    case "tops":
+      return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M6 4l-4 4 2 2 2-1v11h12V9l2 1 2-2-4-4H6z" strokeLinejoin="round" /></svg>;
+    case "bottoms":
+      return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M6 4h12v6l-2 10h-3l-1-8-1 8H8L6 10V4z" strokeLinejoin="round" /></svg>;
+    case "shoes":
+      return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M3 16l2-4c1-2 3-3 5-3h2l4 1c2 0 4 1 5 3v3H3z" strokeLinejoin="round" /></svg>;
+    default:
+      return null;
+  }
+}
 
 export function MobileLookBar({ onTryOn, disabled }: MobileLookBarProps) {
   const { selectedItems, getSelectedCount, removeItem } = useTryOnStore();
@@ -53,8 +60,8 @@ export function MobileLookBar({ onTryOn, disabled }: MobileLookBarProps) {
                       </button>
                     </div>
                   ) : (
-                    <div className="w-11 h-11 rounded-lg border border-dashed border-white/15 flex items-center justify-center text-lg">
-                      {SLOT_ICONS[cat]}
+                    <div className="w-11 h-11 rounded-lg border border-dashed border-white/15 flex items-center justify-center text-white/20">
+                      <SlotSvg type={cat} />
                     </div>
                   )}
                 </div>
@@ -66,7 +73,7 @@ export function MobileLookBar({ onTryOn, disabled }: MobileLookBarProps) {
           <button
             onClick={onTryOn}
             disabled={disabled}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm whitespace-nowrap hover:from-teal-400 hover:to-teal-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-3 rounded-lg bg-teal-400 text-black font-bold text-sm whitespace-nowrap hover:bg-teal-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Experimentar ({count})
           </button>

@@ -117,7 +117,12 @@ export function ProductCatalog() {
 
       {!loading && products.length === 0 && !error && (
         <div className="text-center py-16 lg:py-24 text-white/40">
-          <div className="text-5xl mb-4">🔍</div>
+          <div className="mb-4 flex justify-center">
+            <svg className="w-12 h-12 text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
+            </svg>
+          </div>
           <p className="text-base lg:text-lg mb-2">Nenhum produto encontrado</p>
           <p className="text-sm text-white/25">Tente outra categoria ou limpe a busca</p>
           {category !== "all" && (

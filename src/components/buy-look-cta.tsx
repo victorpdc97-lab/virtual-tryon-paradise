@@ -44,14 +44,14 @@ export function BuyLookCta() {
 
 
   return (
-    <div className="bg-gradient-to-br from-teal-400/10 to-teal-600/5 border border-teal-400/20 rounded-2xl p-6 space-y-4">
-      <h3 className="text-white font-semibold text-lg lg:text-xl">Gostou do look?</h3>
+    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6 space-y-4">
+      <h3 className="text-white font-semibold text-lg lg:text-xl">Compre as peças do look</h3>
 
       <div className="space-y-3">
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-xl p-3"
+            className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-lg p-3"
           >
             <Image
               src={item.image}
@@ -87,13 +87,13 @@ export function BuyLookCta() {
       <div className="flex gap-3">
         <button
           onClick={handleBuyAll}
-          className="flex-1 py-3.5 lg:py-4 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm lg:text-base text-center hover:from-teal-400 hover:to-teal-300 transition-all active:scale-95 hover:shadow-lg hover:shadow-teal-400/20"
+          className="flex-1 py-3.5 lg:py-4 rounded-lg bg-teal-400 text-black font-bold text-sm lg:text-base text-center hover:bg-teal-300 transition-all active:scale-95"
         >
           Comprar Tudo
         </button>
         <button
           onClick={handleNewLook}
-          className="px-5 py-3.5 rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all text-sm"
+          className="px-5 py-3.5 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/25 transition-all text-sm"
         >
           Novo Look
         </button>
@@ -118,7 +118,7 @@ export function BuyLookCta() {
                 window.open(pipeline.resultUrl!, "_blank");
               }
             }}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/50 text-sm font-medium hover:bg-white/10 hover:text-white/70 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/50 text-sm font-medium hover:bg-white/10 hover:text-white/70 transition-all"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

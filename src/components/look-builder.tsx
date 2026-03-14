@@ -4,10 +4,24 @@ import Image from "next/image";
 import { useTryOnStore } from "@/store/use-tryon-store";
 import type { GarmentCategory } from "@/types";
 
-const SLOTS: Array<{ category: GarmentCategory; label: string; icon: string }> = [
-  { category: "tops", label: "Parte de cima", icon: "👕" },
-  { category: "bottoms", label: "Parte de baixo", icon: "👖" },
-  { category: "shoes", label: "Calçado", icon: "👟" },
+function SlotIcon({ type, className }: { type: string; className?: string }) {
+  const cn = className || "w-5 h-5";
+  switch (type) {
+    case "tops":
+      return <svg className={cn} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M6 4l-4 4 2 2 2-1v11h12V9l2 1 2-2-4-4H6z" strokeLinejoin="round" /></svg>;
+    case "bottoms":
+      return <svg className={cn} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M6 4h12v6l-2 10h-3l-1-8-1 8H8L6 10V4z" strokeLinejoin="round" /></svg>;
+    case "shoes":
+      return <svg className={cn} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path d="M3 16l2-4c1-2 3-3 5-3h2l4 1c2 0 4 1 5 3v3H3z" strokeLinejoin="round" /></svg>;
+    default:
+      return null;
+  }
+}
+
+const SLOTS: Array<{ category: GarmentCategory; label: string }> = [
+  { category: "tops", label: "Parte de cima" },
+  { category: "bottoms", label: "Parte de baixo" },
+  { category: "shoes", label: "Calçado" },
 ];
 
 interface LookBuilderProps {
@@ -38,9 +52,8 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
   const savings = totalOriginal - totalPrice;
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 space-y-4">
+    <div className="bg-white/[0.03] border border-white/10 rounded-xl p-5 space-y-4">
       <h3 className="text-white font-semibold flex items-center gap-2">
-        <span className="text-xl">✨</span>
         Seu Look
         {count > 0 && (
           <span className="ml-auto bg-teal-400/20 text-teal-400 text-xs px-2 py-0.5 rounded-full">
@@ -50,12 +63,12 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
       </h3>
 
       <div className="space-y-2">
-        {SLOTS.map(({ category, label, icon }) => {
+        {SLOTS.map(({ category, label }) => {
           const item = selectedItems[category];
           return (
             <div
               key={category}
-              className={`flex items-center gap-3 rounded-xl p-3 transition-all duration-300 ${
+              className={`flex items-center gap-3 rounded-lg p-3 transition-all duration-300 ${
                 item
                   ? "bg-teal-400/5 border border-teal-400/20 hover:bg-teal-400/10"
                   : "bg-white/[0.02] border border-dashed border-white/10 hover:border-white/20"
@@ -77,7 +90,7 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
                         R$ {(item.promoPrice ?? item.price ?? 0).toFixed(2).replace(".", ",")}
                       </p>
                       {item.promoPrice !== null && item.promoPrice < (item.price ?? 0) && (
-                        <span className="text-[10px] bg-teal-400/15 text-teal-400 px-1.5 py-0.5 rounded-full font-medium">
+                        <span className="text-[10px] bg-amber-400/15 text-amber-400 px-1.5 py-0.5 rounded font-medium">
                           Promo
                         </span>
                       )}
@@ -95,7 +108,9 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
                 </>
               ) : (
                 <>
-                  <span className="text-2xl w-12 text-center">{icon}</span>
+                  <div className="w-12 flex items-center justify-center text-white/25">
+                    <SlotIcon type={category} className="w-6 h-6" />
+                  </div>
                   <p className="text-white/40 text-sm">{label}</p>
                 </>
               )}
@@ -115,8 +130,8 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
             </div>
             {savings > 0 && (
               <div className="flex justify-between text-xs">
-                <span className="text-teal-400/60">Economia</span>
-                <span className="text-teal-400 font-medium">
+                <span className="text-emerald-400/60">Economia</span>
+                <span className="text-emerald-400 font-medium">
                   -R$ {savings.toFixed(2).replace(".", ",")}
                 </span>
               </div>
@@ -126,9 +141,9 @@ export function LookBuilder({ onTryOn, disabled }: LookBuilderProps) {
           <button
             onClick={onTryOn}
             disabled={disabled}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-black font-bold text-sm hover:from-teal-400 hover:to-teal-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 rounded-lg bg-teal-400 text-black font-bold text-sm hover:bg-teal-300 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ✨ Experimentar Look
+            Experimentar Look
           </button>
         </div>
       )}

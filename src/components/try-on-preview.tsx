@@ -25,9 +25,8 @@ export function TryOnPreview() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-white font-semibold text-lg lg:text-xl flex items-center gap-2">
-          <span className="text-xl">👀</span>
-          Resultado — Antes & Depois
+        <h3 className="text-white font-semibold text-lg lg:text-xl">
+          Antes & Depois
         </h3>
 
         {/* Desktop view mode toggle */}
