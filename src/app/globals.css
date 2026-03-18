@@ -136,6 +136,54 @@ input:focus-visible {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
+/* Print styles for admin dashboard export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  header, .scrollbar-hide, button {
+    display: none !important;
+  }
+  /* Show the tab content */
+  .max-w-7xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  /* Force visible */
+  [class*="bg-white/"] {
+    background: #f9fafb !important;
+    border-color: #e5e7eb !important;
+  }
+  [class*="text-white"] {
+    color: #111 !important;
+  }
+  [class*="text-teal"] {
+    color: #0d9488 !important;
+  }
+  [class*="text-purple"] {
+    color: #7c3aed !important;
+  }
+  [class*="text-amber"] {
+    color: #d97706 !important;
+  }
+  [class*="text-red"] {
+    color: #dc2626 !important;
+  }
+  [class*="text-green"] {
+    color: #16a34a !important;
+  }
+  svg {
+    color: inherit !important;
+  }
+  /* Page break management */
+  .space-y-6 > * {
+    break-inside: avoid;
+  }
+}
+
 /* Accessibility: reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   .animate-scan,

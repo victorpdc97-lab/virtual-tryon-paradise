@@ -8,6 +8,7 @@ import {
   formatPhone,
   filterDailyStats,
   estimateCost,
+  costPerConversion,
   cardBg,
   cardInnerBg,
   textPrimary,
@@ -16,10 +17,14 @@ import {
   barBg,
 } from "../utils";
 import { StatCard } from "./stat-card";
+import { ExecutiveSummary } from "./executive-summary";
+import { ActivityLog } from "./activity-log";
+import { RetentionChart } from "./retention-chart";
 
 interface OverviewTabProps {
   analytics: Analytics;
   leads: Lead[];
+  credits: number;
   isDark: boolean;
 }
 
@@ -29,7 +34,7 @@ const PERIODS: Array<{ id: Period; label: string }> = [
   { id: "all", label: "Tudo" },
 ];
 
-export function OverviewTab({ analytics, leads, isDark }: OverviewTabProps) {
+export function OverviewTab({ analytics, leads, credits, isDark }: OverviewTabProps) {
   const [period, setPeriod] = useState<Period>("30d");
 
   const filteredDaily = useMemo(
@@ -80,8 +85,11 @@ export function OverviewTab({ analytics, leads, isDark }: OverviewTabProps) {
         <StatCard label="Custo Estimado" value={estimateCost(analytics.totalTryOns)} icon="💸" color="red" isDark={isDark} />
       </div>
 
-      {/* Stats Cards - row 2: processing time + abandonment + recurrence */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Executive Summary */}
+      <ExecutiveSummary analytics={analytics} leads={leads} credits={credits} isDark={isDark} />
+
+      {/* Stats Cards - row 2: processing time + abandonment + recurrence + cost per conversion */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatCard
           label="Tempo Medio"
           value={analytics.avgProcessingTime !== null ? `${analytics.avgProcessingTime}s` : "—"}
@@ -111,6 +119,14 @@ export function OverviewTab({ analytics, leads, isDark }: OverviewTabProps) {
           subtitle={leads.length > 0 ? `${Math.round((newLeads.length / leads.length) * 100)}% do total` : ""}
           icon="🆕"
           color="amber"
+          isDark={isDark}
+        />
+        <StatCard
+          label="Custo/Conversao"
+          value={costPerConversion(analytics.totalTryOns, analytics.totalBuyClicks)}
+          subtitle="custo por clique de compra"
+          icon="💵"
+          color="red"
           isDark={isDark}
         />
       </div>
@@ -152,6 +168,12 @@ export function OverviewTab({ analytics, leads, isDark }: OverviewTabProps) {
 
         {/* Daily Stats - Line Chart */}
         <LineChartCard dailyStats={filteredDaily} periodTryOns={periodTryOns} period={period} isDark={isDark} />
+      </div>
+
+      {/* Activity Log + Retention */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <ActivityLog activities={analytics.activities} isDark={isDark} />
+        <RetentionChart leads={leads} isDark={isDark} />
       </div>
 
       {/* Abandoned leads (follow-up list) */}

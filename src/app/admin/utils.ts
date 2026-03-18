@@ -95,6 +95,75 @@ export function inputBg(isDark: boolean) {
     : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-teal-500";
 }
 
+export function costPerConversion(totalTryOns: number, totalBuyClicks: number): string {
+  if (totalBuyClicks === 0) return "—";
+  const cost = (totalTryOns * 1.5) / totalBuyClicks;
+  return cost.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+export function generateExecutiveSummary(
+  analytics: { totalTryOns: number; totalBuyClicks: number; overallConversion: number; dailyStats: Record<string, number>; avgProcessingTime: number | null; topTried: Array<{ productName: string; tryOnCount: number }>; conversionRates: Array<{ productName: string; conversionRate: number }> },
+  leads: Array<{ tryOnCount: number; createdAt: string }>,
+  credits: number
+): string[] {
+  const lines: string[] = [];
+  const today = new Date().toISOString().slice(0, 10);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+
+  // Weekly try-ons comparison
+  let thisWeek = 0, lastWeek = 0;
+  for (const [date, count] of Object.entries(analytics.dailyStats)) {
+    if (date >= sevenDaysAgo) thisWeek += count;
+    else if (date >= fourteenDaysAgo) lastWeek += count;
+  }
+  if (thisWeek > 0) {
+    if (lastWeek > 0) {
+      const pct = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+      const dir = pct > 0 ? "+" : "";
+      lines.push(`Esta semana: ${thisWeek} try-ons (${dir}${pct}% vs anterior)`);
+    } else {
+      lines.push(`Esta semana: ${thisWeek} try-ons`);
+    }
+  }
+
+  // New leads this week
+  const newLeads = leads.filter((l) => l.createdAt >= sevenDaysAgo).length;
+  if (newLeads > 0) lines.push(`${newLeads} lead${newLeads > 1 ? "s" : ""} novo${newLeads > 1 ? "s" : ""} nos ultimos 7 dias`);
+
+  // Top product
+  if (analytics.topTried.length > 0) {
+    const top = analytics.topTried[0];
+    lines.push(`Produto mais experimentado: ${top.productName} (${top.tryOnCount}x)`);
+  }
+
+  // Best conversion
+  if (analytics.conversionRates.length > 0) {
+    const best = analytics.conversionRates[0];
+    lines.push(`Melhor conversao: ${best.productName} (${best.conversionRate}%)`);
+  }
+
+  // Abandoned leads
+  const abandoned = leads.filter((l) => l.tryOnCount === 0).length;
+  if (abandoned > 0) lines.push(`${abandoned} lead${abandoned > 1 ? "s" : ""} sem try-on — oportunidade de follow-up`);
+
+  // Processing time
+  if (analytics.avgProcessingTime) {
+    lines.push(`Tempo medio de processamento: ${analytics.avgProcessingTime}s`);
+  }
+
+  // Credits warning
+  if (credits >= 0 && credits < 100) {
+    lines.push(`Creditos Fashn: ${credits} restantes${credits < 50 ? " — recarregar!" : ""}`);
+  }
+
+  // Today's try-ons
+  const todayCount = analytics.dailyStats[today] || 0;
+  if (todayCount > 0) lines.push(`Hoje: ${todayCount} try-on${todayCount > 1 ? "s" : ""}`);
+
+  return lines;
+}
+
 export function exportLeadsCsv(
   leads: Array<{
     email: string;

@@ -17,6 +17,12 @@ export interface ConversionStat extends ProductStat {
   conversionRate: number;
 }
 
+export interface Activity {
+  type: "lead" | "tryon" | "buy";
+  label: string;
+  ts: number;
+}
+
 export interface Analytics {
   totalTryOns: number;
   totalBuyClicks: number;
@@ -26,6 +32,7 @@ export interface Analytics {
   conversionRates: ConversionStat[];
   dailyStats: Record<string, number>;
   avgProcessingTime: number | null;
+  activities: Activity[];
 }
 
 export interface DashboardData {
@@ -35,7 +42,7 @@ export interface DashboardData {
   token?: string;
 }
 
-export type Tab = "overview" | "leads" | "products" | "conversion";
+export type Tab = "overview" | "leads" | "products" | "conversion" | "settings";
 export type Theme = "dark" | "light";
 
 export type SortDirection = "asc" | "desc";

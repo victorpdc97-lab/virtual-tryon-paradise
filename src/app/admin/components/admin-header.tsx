@@ -75,6 +75,14 @@ export function AdminHeader({
                 {timeAgo(lastUpdated)}
               </span>
             )}
+            {/* Export PDF */}
+            <button
+              onClick={() => window.print()}
+              className={`text-xs px-2 py-1.5 rounded-lg border transition-all hidden sm:inline-flex ${btnBase}`}
+              title="Exportar como PDF"
+            >
+              📄
+            </button>
             {/* Theme toggle */}
             <button
               onClick={onToggleTheme}

@@ -8,6 +8,7 @@ import { OverviewTab } from "./components/overview-tab";
 import { LeadsTab } from "./components/leads-tab";
 import { ProductsTab } from "./components/products-tab";
 import { ConversionTab } from "./components/conversion-tab";
+import { SettingsTab } from "./components/settings-tab";
 import { DashboardSkeleton } from "./components/dashboard-skeleton";
 
 const TABS: Array<{ id: Tab; label: string; icon: string }> = [
@@ -15,6 +16,7 @@ const TABS: Array<{ id: Tab; label: string; icon: string }> = [
   { id: "leads", label: "Clientes", icon: "👥" },
   { id: "products", label: "Produtos", icon: "👕" },
   { id: "conversion", label: "Conversao", icon: "💰" },
+  { id: "settings", label: "Config", icon: "⚙️" },
 ];
 
 export default function AdminDashboard() {
@@ -193,10 +195,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tab Content */}
-        {tab === "overview" && <OverviewTab analytics={analytics} leads={leads} isDark={isDark} />}
+        {tab === "overview" && <OverviewTab analytics={analytics} leads={leads} credits={credits} isDark={isDark} />}
         {tab === "leads" && <LeadsTab leads={leads} isDark={isDark} />}
         {tab === "products" && <ProductsTab analytics={analytics} isDark={isDark} />}
         {tab === "conversion" && <ConversionTab analytics={analytics} isDark={isDark} />}
+        {tab === "settings" && <SettingsTab isDark={isDark} />}
       </div>
     </div>
   );

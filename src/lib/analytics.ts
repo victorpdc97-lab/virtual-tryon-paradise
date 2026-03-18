@@ -8,12 +8,19 @@ interface ProductStat {
   lastTryOn: number;
 }
 
+interface Activity {
+  type: "lead" | "tryon" | "buy";
+  label: string;
+  ts: number;
+}
+
 interface AnalyticsStore {
   totalTryOns: number;
   totalBuyClicks: number;
   products: Record<string, ProductStat>;
   dailyTryOns: Record<string, number>;
   processingTimes?: number[];
+  activities?: Activity[];
 }
 
 interface AnalyticsData {
@@ -22,6 +29,7 @@ interface AnalyticsData {
   products: Map<number, ProductStat>;
   dailyTryOns: Map<string, number>;
   processingTimes: number[];
+  activities: Activity[];
 }
 
 const analytics: AnalyticsData = {
@@ -30,7 +38,15 @@ const analytics: AnalyticsData = {
   products: new Map(),
   dailyTryOns: new Map(),
   processingTimes: [],
+  activities: [],
 };
+
+function addActivity(type: Activity["type"], label: string) {
+  analytics.activities.push({ type, label, ts: Date.now() });
+  if (analytics.activities.length > 50) {
+    analytics.activities = analytics.activities.slice(-50);
+  }
+}
 
 let initPromise: Promise<void> | null = null;
 
@@ -60,6 +76,10 @@ function init(): Promise<void> {
         if (data.processingTimes?.length && analytics.processingTimes.length === 0) {
           analytics.processingTimes = data.processingTimes;
         }
+
+        if (data.activities?.length && analytics.activities.length === 0) {
+          analytics.activities = data.activities;
+        }
       }
     })();
   }
@@ -73,6 +93,7 @@ function getSerializable(): AnalyticsStore {
     products: Object.fromEntries(analytics.products),
     dailyTryOns: Object.fromEntries(analytics.dailyTryOns),
     processingTimes: analytics.processingTimes.slice(-100),
+    activities: analytics.activities.slice(-50),
   };
 }
 
@@ -94,11 +115,19 @@ export function trackProcessingTime(durationMs: number) {
   flush();
 }
 
+export function trackLeadCreated(email: string) {
+  init().catch(() => {});
+  addActivity("lead", email);
+  flush();
+}
+
 export function trackTryOn(items: Array<{ id: number; name: string }>) {
   // Trigger init in background
   init().catch(() => {});
 
   analytics.totalTryOns++;
+  const names = items.map((i) => i.name).filter(Boolean);
+  addActivity("tryon", names.length > 0 ? names.join(", ") : "try-on");
 
   const day = today();
   analytics.dailyTryOns.set(day, (analytics.dailyTryOns.get(day) || 0) + 1);
@@ -126,6 +155,7 @@ export function trackBuyClick(productId: number, productName: string) {
   init().catch(() => {});
 
   analytics.totalBuyClicks++;
+  addActivity("buy", productName || `Produto #${productId}`);
 
   const existing = analytics.products.get(productId);
   if (existing) {
@@ -182,5 +212,6 @@ export async function getAnalytics() {
     conversionRates,
     dailyStats,
     avgProcessingTime,
+    activities: analytics.activities.slice(-30).reverse(),
   };
 }

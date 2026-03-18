@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveLead, getLeads } from "@/lib/leads";
+import { trackLeadCreated } from "@/lib/analytics";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     saveLead(email, phone);
+    trackLeadCreated(email);
 
     return NextResponse.json({ ok: true });
   } catch {
