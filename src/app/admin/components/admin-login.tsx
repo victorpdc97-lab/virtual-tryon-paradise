@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { DashboardData } from "../types";
+import type { DashboardData, Theme } from "../types";
 
 interface AdminLoginProps {
   error: string | null;
   onLogin: (data: DashboardData, token: string) => void;
+  theme: Theme;
 }
 
-export function AdminLogin({ error: externalError, onLogin }: AdminLoginProps) {
+export function AdminLogin({ error: externalError, onLogin, theme }: AdminLoginProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(externalError);
+  const isDark = theme === "dark";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +45,14 @@ export function AdminLogin({ error: externalError, onLogin }: AdminLoginProps) {
   const displayError = error || externalError;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
+    <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? "bg-[#0a0a0a]" : "bg-gray-50"}`}>
       <form onSubmit={handleLogin} className="max-w-sm w-full space-y-6">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-black font-bold text-lg">
             P
           </div>
-          <h1 className="text-white font-bold text-xl">Admin Dashboard</h1>
-          <p className="text-white/40 text-sm">Paradise Provador Virtual</p>
+          <h1 className={`font-bold text-xl ${isDark ? "text-white" : "text-gray-900"}`}>Admin Dashboard</h1>
+          <p className={`text-sm ${isDark ? "text-white/40" : "text-gray-500"}`}>Paradise Provador Virtual</p>
         </div>
 
         <div>
@@ -59,7 +61,11 @@ export function AdminLogin({ error: externalError, onLogin }: AdminLoginProps) {
             placeholder="Senha de administrador"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 transition-all"
+            className={`w-full px-4 py-3 rounded-xl border text-sm focus:outline-none transition-all ${
+              isDark
+                ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-teal-400/50"
+                : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-teal-500"
+            }`}
             autoFocus
           />
         </div>

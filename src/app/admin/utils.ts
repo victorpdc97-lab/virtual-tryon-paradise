@@ -64,6 +64,37 @@ export function timeAgo(date: Date): string {
   return `ha ${hours}h`;
 }
 
+// Theme-aware class helpers
+export function cardBg(isDark: boolean) {
+  return isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-gray-200";
+}
+
+export function cardInnerBg(isDark: boolean) {
+  return isDark ? "bg-white/[0.02]" : "bg-gray-50";
+}
+
+export function textPrimary(isDark: boolean) {
+  return isDark ? "text-white" : "text-gray-900";
+}
+
+export function textSecondary(isDark: boolean) {
+  return isDark ? "text-white/70" : "text-gray-600";
+}
+
+export function textMuted(isDark: boolean) {
+  return isDark ? "text-white/30" : "text-gray-400";
+}
+
+export function barBg(isDark: boolean) {
+  return isDark ? "bg-white/5" : "bg-gray-100";
+}
+
+export function inputBg(isDark: boolean) {
+  return isDark
+    ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-teal-400/50"
+    : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-teal-500";
+}
+
 export function exportLeadsCsv(
   leads: Array<{
     email: string;

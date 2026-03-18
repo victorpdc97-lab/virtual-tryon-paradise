@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { startTryOn, waitForCompletion } from "@/lib/fashn";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
-import { trackTryOn } from "@/lib/analytics";
+import { trackTryOn, trackProcessingTime } from "@/lib/analytics";
 import { incrementLeadTryOn } from "@/lib/leads";
 
 interface TryOnRequestBody {
@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Process ALL steps sequentially in a single request
+    const startTime = Date.now();
     let currentImage = body.photoUrl;
 
     for (let i = 0; i < sortedItems.length; i++) {
@@ -90,6 +91,9 @@ export async function POST(req: NextRequest) {
       // Wait for this step to complete before starting next
       currentImage = await waitForCompletion(id);
     }
+
+    // Track processing time
+    trackProcessingTime(Date.now() - startTime);
 
     return NextResponse.json({
       status: "completed",

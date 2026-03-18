@@ -13,6 +13,7 @@ interface AnalyticsStore {
   totalBuyClicks: number;
   products: Record<string, ProductStat>;
   dailyTryOns: Record<string, number>;
+  processingTimes?: number[];
 }
 
 interface AnalyticsData {
@@ -20,6 +21,7 @@ interface AnalyticsData {
   totalBuyClicks: number;
   products: Map<number, ProductStat>;
   dailyTryOns: Map<string, number>;
+  processingTimes: number[];
 }
 
 const analytics: AnalyticsData = {
@@ -27,6 +29,7 @@ const analytics: AnalyticsData = {
   totalBuyClicks: 0,
   products: new Map(),
   dailyTryOns: new Map(),
+  processingTimes: [],
 };
 
 let initPromise: Promise<void> | null = null;
@@ -53,6 +56,10 @@ function init(): Promise<void> {
             analytics.dailyTryOns.set(day, Math.max(existing, count));
           }
         }
+
+        if (data.processingTimes?.length && analytics.processingTimes.length === 0) {
+          analytics.processingTimes = data.processingTimes;
+        }
       }
     })();
   }
@@ -65,6 +72,7 @@ function getSerializable(): AnalyticsStore {
     totalBuyClicks: analytics.totalBuyClicks,
     products: Object.fromEntries(analytics.products),
     dailyTryOns: Object.fromEntries(analytics.dailyTryOns),
+    processingTimes: analytics.processingTimes.slice(-100),
   };
 }
 
@@ -74,6 +82,16 @@ function flush() {
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+export function trackProcessingTime(durationMs: number) {
+  init().catch(() => {});
+  analytics.processingTimes.push(durationMs);
+  // Keep last 100 entries
+  if (analytics.processingTimes.length > 100) {
+    analytics.processingTimes = analytics.processingTimes.slice(-100);
+  }
+  flush();
 }
 
 export function trackTryOn(items: Array<{ id: number; name: string }>) {
@@ -148,6 +166,11 @@ export async function getAnalytics() {
 
   const dailyStats = Object.fromEntries(analytics.dailyTryOns);
 
+  const times = analytics.processingTimes;
+  const avgProcessingTime = times.length > 0
+    ? Math.round(times.reduce((a, b) => a + b, 0) / times.length / 1000)
+    : null;
+
   return {
     totalTryOns: analytics.totalTryOns,
     totalBuyClicks: analytics.totalBuyClicks,
@@ -158,5 +181,6 @@ export async function getAnalytics() {
     topBought,
     conversionRates,
     dailyStats,
+    avgProcessingTime,
   };
 }

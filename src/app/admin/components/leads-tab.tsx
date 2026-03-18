@@ -2,12 +2,13 @@
 
 import { useState, useMemo } from "react";
 import type { Lead, LeadSortField, SortDirection } from "../types";
-import { formatDate, formatPhone, exportLeadsCsv } from "../utils";
+import { formatDate, formatPhone, exportLeadsCsv, cardBg, textMuted, textSecondary, inputBg } from "../utils";
 
 const LEADS_PER_PAGE = 20;
 
 interface LeadsTabProps {
   leads: Lead[];
+  isDark: boolean;
 }
 
 const COLUMNS: Array<{ field: LeadSortField; label: string; span: string }> = [
@@ -17,7 +18,7 @@ const COLUMNS: Array<{ field: LeadSortField; label: string; span: string }> = [
   { field: "lastTryOn", label: "Ultimo Uso", span: "col-span-2" },
 ];
 
-export function LeadsTab({ leads }: LeadsTabProps) {
+export function LeadsTab({ leads, isDark }: LeadsTabProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<LeadSortField>("createdAt");
@@ -78,13 +79,17 @@ export function LeadsTab({ leads }: LeadsTabProps) {
     setPage(1);
   };
 
+  const btnStyle = isDark
+    ? "border-white/10 text-white/50 hover:bg-white/5"
+    : "border-gray-200 text-gray-500 hover:bg-gray-100";
+
   return (
     <div className="space-y-4">
       {/* Search + Export + Count */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30"
+            className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? "text-white/30" : "text-gray-400"}`}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -98,34 +103,38 @@ export function LeadsTab({ leads }: LeadsTabProps) {
             placeholder="Buscar por email ou telefone..."
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-teal-400/50 transition-all"
+            className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none transition-all ${inputBg(isDark)}`}
           />
         </div>
         <button
           onClick={() => exportLeadsCsv(filtered)}
           disabled={filtered.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm hover:bg-white/10 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+            isDark
+              ? "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white"
+              : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+          }`}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Exportar CSV
         </button>
-        <span className="text-white/30 text-sm">
+        <span className={`text-sm ${textMuted(isDark)}`}>
           {filtered.length} {filtered.length === 1 ? "lead" : "leads"}
         </span>
       </div>
 
       {/* Table */}
-      <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
+      <div className={`border rounded-2xl overflow-hidden ${cardBg(isDark)}`}>
         {/* Sortable header */}
-        <div className="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 border-b border-white/5">
+        <div className={`hidden sm:grid grid-cols-12 gap-4 px-5 py-3 border-b ${isDark ? "border-white/5" : "border-gray-100"}`}>
           {COLUMNS.map((col) => (
             <button
               key={col.field}
               onClick={() => handleSort(col.field)}
               className={`${col.span} flex items-center gap-1 text-xs font-medium uppercase tracking-wider transition-colors ${
-                sortField === col.field ? "text-teal-400" : "text-white/40 hover:text-white/60"
+                sortField === col.field ? "text-teal-400" : `${isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"}`
               }`}
             >
               {col.label}
@@ -134,40 +143,41 @@ export function LeadsTab({ leads }: LeadsTabProps) {
               )}
             </button>
           ))}
-          {/* Telefone column (not sortable) */}
-          <div className="col-span-2 text-xs font-medium uppercase tracking-wider text-white/40">
+          <div className={`col-span-2 text-xs font-medium uppercase tracking-wider ${isDark ? "text-white/40" : "text-gray-400"}`}>
             Telefone
           </div>
         </div>
 
         {paginated.length === 0 ? (
-          <p className="text-white/30 text-sm text-center py-12">Nenhum lead encontrado</p>
+          <p className={`text-sm text-center py-12 ${textMuted(isDark)}`}>Nenhum lead encontrado</p>
         ) : (
-          <div className="divide-y divide-white/5">
+          <div className={`divide-y ${isDark ? "divide-white/5" : "divide-gray-100"}`}>
             {paginated.map((lead) => (
               <div
                 key={lead.email}
-                className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors"
+                className={`grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 transition-colors ${
+                  isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50"
+                }`}
               >
                 <div className="sm:col-span-4">
-                  <p className="text-white/80 text-sm">{lead.email}</p>
+                  <p className={`text-sm ${textSecondary(isDark)}`}>{lead.email}</p>
                 </div>
                 <div className="sm:col-span-2">
-                  <p className="text-white/40 text-sm">{formatDate(lead.createdAt)}</p>
+                  <p className={`text-sm ${textMuted(isDark)}`}>{formatDate(lead.createdAt)}</p>
                 </div>
                 <div className="sm:col-span-2">
                   <span
                     className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                       lead.tryOnCount > 0
                         ? "bg-teal-400/10 text-teal-400"
-                        : "bg-white/5 text-white/30"
+                        : isDark ? "bg-white/5 text-white/30" : "bg-gray-100 text-gray-400"
                     }`}
                   >
                     {lead.tryOnCount} {lead.tryOnCount === 1 ? "uso" : "usos"}
                   </span>
                 </div>
                 <div className="sm:col-span-2">
-                  <p className="text-white/30 text-sm">
+                  <p className={`text-sm ${textMuted(isDark)}`}>
                     {lead.lastTryOn ? formatDate(lead.lastTryOn) : "—"}
                   </p>
                 </div>
@@ -190,7 +200,7 @@ export function LeadsTab({ leads }: LeadsTabProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-white/30 text-xs">
+          <p className={`text-xs ${textMuted(isDark)}`}>
             Mostrando {(page - 1) * LEADS_PER_PAGE + 1}–
             {Math.min(page * LEADS_PER_PAGE, filtered.length)} de {filtered.length}
           </p>
@@ -198,7 +208,7 @@ export function LeadsTab({ leads }: LeadsTabProps) {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1.5 rounded-lg text-xs border border-white/10 text-white/50 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className={`px-3 py-1.5 rounded-lg text-xs border disabled:opacity-30 disabled:cursor-not-allowed transition-all ${btnStyle}`}
             >
               Anterior
             </button>
@@ -220,7 +230,7 @@ export function LeadsTab({ leads }: LeadsTabProps) {
                   className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
                     page === pageNum
                       ? "bg-teal-400 text-black"
-                      : "text-white/50 hover:bg-white/5"
+                      : isDark ? "text-white/50 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
                   }`}
                 >
                   {pageNum}
@@ -230,7 +240,7 @@ export function LeadsTab({ leads }: LeadsTabProps) {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1.5 rounded-lg text-xs border border-white/10 text-white/50 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className={`px-3 py-1.5 rounded-lg text-xs border disabled:opacity-30 disabled:cursor-not-allowed transition-all ${btnStyle}`}
             >
               Proximo
             </button>

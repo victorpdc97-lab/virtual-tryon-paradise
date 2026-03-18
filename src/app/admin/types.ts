@@ -25,6 +25,7 @@ export interface Analytics {
   topBought: ProductStat[];
   conversionRates: ConversionStat[];
   dailyStats: Record<string, number>;
+  avgProcessingTime: number | null;
 }
 
 export interface DashboardData {
@@ -35,6 +36,7 @@ export interface DashboardData {
 }
 
 export type Tab = "overview" | "leads" | "products" | "conversion";
+export type Theme = "dark" | "light";
 
 export type SortDirection = "asc" | "desc";
 export type LeadSortField = "email" | "createdAt" | "tryOnCount" | "lastTryOn";
