@@ -14,7 +14,7 @@ export default function GlobalError({
           <div style={{ maxWidth: "400px", textAlign: "center" }}>
             <h2 style={{ fontSize: "20px", fontWeight: 600, marginBottom: "12px" }}>Algo deu errado</h2>
             <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", wordBreak: "break-all", marginBottom: "16px" }}>
-              {error.message}
+              {error?.message || "Erro inesperado"}
             </p>
             <button
               onClick={reset}
