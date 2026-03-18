@@ -23,9 +23,11 @@ export function PhotoUpload() {
         // Compress image client-side before uploading
         const imageCompression = (await import("browser-image-compression")).default;
         const processedFile = await imageCompression(file, {
-          maxSizeMB: 2,
-          maxWidthOrHeight: 1024,
+          maxSizeMB: 1.5,
+          maxWidthOrHeight: 768,
           useWebWorker: true,
+          fileType: "image/webp",
+          initialQuality: 0.8,
         });
 
         // Create local preview URL

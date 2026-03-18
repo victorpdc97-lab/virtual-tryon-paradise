@@ -13,6 +13,7 @@ import { TurnstileWidget } from "@/components/turnstile-widget";
 import { Onboarding } from "@/components/onboarding";
 import { Celebration } from "@/components/celebration";
 import { MobileLookBar } from "@/components/mobile-look-bar";
+import { RateLimitBadge } from "@/components/rate-limit-badge";
 
 export default function StudioPage() {
   const router = useRouter();
@@ -150,6 +151,9 @@ export default function StudioPage() {
             <span className="text-white/20 text-xs sm:text-sm">Studio</span>
           </button>
 
+          <div className="flex items-center gap-4">
+            <RateLimitBadge />
+          </div>
           {/* Desktop breadcrumbs */}
           <div className="hidden lg:flex items-center gap-2 text-sm text-white/30">
             <span className="hover:text-white/50 cursor-pointer transition-colors" onClick={() => router.push("/")}>Início</span>

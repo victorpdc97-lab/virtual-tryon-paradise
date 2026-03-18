@@ -80,6 +80,13 @@ export function checkRateLimit(ip: string): { allowed: boolean; error?: string; 
   };
 }
 
+export function getRemainingTryOns(ip: string): number {
+  const now = Date.now();
+  const entry = store.get(ip);
+  if (!entry || now > entry.dailyReset) return DAILY_LIMIT;
+  return Math.max(0, DAILY_LIMIT - entry.dailyCount);
+}
+
 export function getClientIp(req: Request): string {
   const headers = new Headers(req.headers);
   return (

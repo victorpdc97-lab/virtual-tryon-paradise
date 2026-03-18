@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { DashboardData, Tab, Theme } from "./types";
 import { AdminLogin } from "./components/admin-login";
 import { AdminHeader } from "./components/admin-header";
@@ -27,6 +27,15 @@ export default function AdminDashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
+  const [newLeadsCount, setNewLeadsCount] = useState(0);
+  const prevLeadsCountRef = useRef<number | null>(null);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
 
   // Restore token + theme from localStorage on mount
   useEffect(() => {
@@ -63,7 +72,24 @@ export default function AdminDashboard() {
         throw new Error("Erro ao buscar dados");
       }
 
-      const result = await res.json();
+      const result: DashboardData = await res.json();
+
+      // Detect new leads and send browser notification
+      if (prevLeadsCountRef.current !== null) {
+        const diff = result.leads.length - prevLeadsCountRef.current;
+        if (diff > 0) {
+          setNewLeadsCount((c) => c + diff);
+          if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+            const newest = result.leads[0];
+            new Notification("Novo lead no Provador Virtual", {
+              body: `${newest.email} acabou de se cadastrar`,
+              icon: "/icon.png",
+            });
+          }
+        }
+      }
+      prevLeadsCountRef.current = result.leads.length;
+
       setData(result);
       setLastUpdated(new Date());
       setError(null);
@@ -143,7 +169,10 @@ export default function AdminDashboard() {
           {TABS.map((t) => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => {
+                setTab(t.id);
+                if (t.id === "leads") setNewLeadsCount(0);
+              }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                 tab === t.id
                   ? "bg-teal-400 text-black"
@@ -154,6 +183,11 @@ export default function AdminDashboard() {
             >
               <span>{t.icon}</span>
               {t.label}
+              {t.id === "leads" && newLeadsCount > 0 && tab !== "leads" && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                  {newLeadsCount}
+                </span>
+              )}
             </button>
           ))}
         </div>
