@@ -20,6 +20,8 @@ import { StatCard } from "./stat-card";
 import { ExecutiveSummary } from "./executive-summary";
 import { ActivityLog } from "./activity-log";
 import { RetentionChart } from "./retention-chart";
+import { HeatmapChart } from "./heatmap-chart";
+import { FeedbackCard } from "./feedback-card";
 
 interface OverviewTabProps {
   analytics: Analytics;
@@ -45,6 +47,26 @@ export function OverviewTab({ analytics, leads, credits, isDark }: OverviewTabPr
   const periodTryOns = useMemo(() => {
     return Object.values(filteredDaily).reduce((sum, n) => sum + n, 0);
   }, [filteredDaily]);
+
+  // Period comparison (this week vs last week)
+  const deltas = useMemo(() => {
+    const now = Date.now();
+    const d7 = 7 * 86400000;
+    const thisWeekStart = new Date(now - d7).toISOString().slice(0, 10);
+    const lastWeekStart = new Date(now - 2 * d7).toISOString().slice(0, 10);
+    let thisW = 0, lastW = 0;
+    for (const [date, count] of Object.entries(analytics.dailyStats)) {
+      if (date >= thisWeekStart) thisW += count;
+      else if (date >= lastWeekStart) lastW += count;
+    }
+    const tryOnDelta = lastW > 0 ? Math.round(((thisW - lastW) / lastW) * 100) : null;
+
+    const thisWeekLeads = leads.filter((l) => l.createdAt >= thisWeekStart).length;
+    const lastWeekLeads = leads.filter((l) => l.createdAt >= lastWeekStart && l.createdAt < thisWeekStart).length;
+    const leadDelta = lastWeekLeads > 0 ? Math.round(((thisWeekLeads - lastWeekLeads) / lastWeekLeads) * 100) : null;
+
+    return { tryOnDelta, leadDelta };
+  }, [analytics.dailyStats, leads]);
 
   // Abandonment & recurrence stats
   const abandonedLeads = useMemo(() => leads.filter((l) => l.tryOnCount === 0), [leads]);
@@ -78,8 +100,8 @@ export function OverviewTab({ analytics, leads, credits, isDark }: OverviewTabPr
 
       {/* Stats Cards - row 1 */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        <StatCard label="Total de Leads" value={leads.length} icon="👥" color="teal" isDark={isDark} />
-        <StatCard label="Try-Ons Realizados" value={analytics.totalTryOns} icon="✨" color="purple" isDark={isDark} />
+        <StatCard label="Total de Leads" value={leads.length} delta={deltas.leadDelta} icon="👥" color="teal" isDark={isDark} />
+        <StatCard label="Try-Ons Realizados" value={analytics.totalTryOns} delta={deltas.tryOnDelta} icon="✨" color="purple" isDark={isDark} />
         <StatCard label="Cliques de Compra" value={analytics.totalBuyClicks} icon="🛒" color="amber" isDark={isDark} />
         <StatCard label="Taxa de Conversao" value={`${analytics.overallConversion}%`} icon="💰" color="green" isDark={isDark} />
         <StatCard label="Custo Estimado" value={estimateCost(analytics.totalTryOns)} icon="💸" color="red" isDark={isDark} />
@@ -170,9 +192,13 @@ export function OverviewTab({ analytics, leads, credits, isDark }: OverviewTabPr
         <LineChartCard dailyStats={filteredDaily} periodTryOns={periodTryOns} period={period} isDark={isDark} />
       </div>
 
-      {/* Activity Log + Retention */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      {/* Heatmap */}
+      <HeatmapChart hourlyStats={analytics.hourlyStats} isDark={isDark} />
+
+      {/* Activity Log + Feedback + Retention */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <ActivityLog activities={analytics.activities} isDark={isDark} />
+        <FeedbackCard ratings={analytics.ratings} isDark={isDark} />
         <RetentionChart leads={leads} isDark={isDark} />
       </div>
 

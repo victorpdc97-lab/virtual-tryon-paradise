@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import type { Analytics, SortDirection } from "../types";
+import type { Analytics, ProductStat, SortDirection } from "../types";
 import { cardBg, cardInnerBg, textPrimary, textSecondary, textMuted, barBg, inputBg } from "../utils";
+import { ProductDetailModal } from "./product-detail-modal";
 
 type ProductSortField = "name" | "value";
 
@@ -13,6 +14,7 @@ interface ProductsTabProps {
 
 export function ProductsTab({ analytics, isDark }: ProductsTabProps) {
   const [search, setSearch] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<ProductStat | null>(null);
 
   // Products with high try-ons but zero buy clicks
   const noClickProducts = useMemo(
@@ -78,6 +80,10 @@ export function ProductsTab({ analytics, isDark }: ProductsTabProps) {
         color="teal"
         search={search}
         isDark={isDark}
+        onItemClick={(id) => {
+          const p = analytics.topTried.find((x) => x.productId === id);
+          if (p) setSelectedProduct(p);
+        }}
       />
 
       <SortableBarChart
@@ -91,7 +97,20 @@ export function ProductsTab({ analytics, isDark }: ProductsTabProps) {
         color="amber"
         search={search}
         isDark={isDark}
+        onItemClick={(id) => {
+          const p = analytics.topTried.find((x) => x.productId === id) || analytics.topBought.find((x) => x.productId === id);
+          if (p) setSelectedProduct(p);
+        }}
       />
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          isDark={isDark}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </div>
   );
 }
@@ -103,6 +122,7 @@ function SortableBarChart({
   color,
   search,
   isDark,
+  onItemClick,
 }: {
   title: string;
   icon: string;
@@ -110,6 +130,7 @@ function SortableBarChart({
   color: "teal" | "amber";
   search: string;
   isDark: boolean;
+  onItemClick?: (id: number) => void;
 }) {
   const [sortField, setSortField] = useState<ProductSortField>("value");
   const [sortDir, setSortDir] = useState<SortDirection>("desc");
@@ -180,11 +201,15 @@ function SortableBarChart({
           {filtered.map((item, i) => {
             const width = (item.value / maxValue) * 100;
             return (
-              <div key={item.id} className="flex items-center gap-3">
+              <div
+                key={item.id}
+                className={`flex items-center gap-3 ${onItemClick ? "cursor-pointer" : ""}`}
+                onClick={() => onItemClick?.(item.id)}
+              >
                 <span className={`text-xs w-6 text-right shrink-0 ${textMuted(isDark)}`}>{i + 1}.</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-sm truncate ${textSecondary(isDark)}`}>{item.label}</span>
+                    <span className={`text-sm truncate ${textSecondary(isDark)} ${onItemClick ? "hover:text-teal-400 transition-colors" : ""}`}>{item.label}</span>
                     {item.alert && (
                       <span className="text-amber-400 text-[10px] shrink-0" title="Sem cliques de compra">⚠️</span>
                     )}

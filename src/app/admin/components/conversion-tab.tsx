@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { Analytics } from "../types";
-import { cardBg, textPrimary, textSecondary, textMuted } from "../utils";
+import { cardBg, textPrimary, textSecondary, textMuted, inputBg, costPerConversion } from "../utils";
 import { StatCard } from "./stat-card";
 
 interface ConversionTabProps {
@@ -11,13 +11,22 @@ interface ConversionTabProps {
 }
 
 export function ConversionTab({ analytics, isDark }: ConversionTabProps) {
+  const [search, setSearch] = useState("");
+
+  const filteredRates = useMemo(() => {
+    if (!search) return analytics.conversionRates;
+    const q = search.toLowerCase();
+    return analytics.conversionRates.filter((p) => p.productName.toLowerCase().includes(q));
+  }, [analytics.conversionRates, search]);
+
   return (
     <div className="space-y-6">
       {/* Overall stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard label="Try-Ons" value={analytics.totalTryOns} icon="✨" color="teal" isDark={isDark} />
         <StatCard label="Cliques Compra" value={analytics.totalBuyClicks} icon="🛒" color="amber" isDark={isDark} />
         <StatCard label="Conversao Geral" value={`${analytics.overallConversion}%`} icon="📈" color="green" isDark={isDark} />
+        <StatCard label="Custo/Conversao" value={costPerConversion(analytics.totalTryOns, analytics.totalBuyClicks)} icon="💵" color="red" isDark={isDark} />
       </div>
 
       {/* Scatter Plot */}
@@ -25,16 +34,29 @@ export function ConversionTab({ analytics, isDark }: ConversionTabProps) {
 
       {/* Per-product conversion */}
       <div className={`border rounded-2xl p-5 ${cardBg(isDark)}`}>
-        <h3 className={`font-semibold mb-4 flex items-center gap-2 ${textPrimary(isDark)}`}>
-          <span>💰</span> Conversao por Produto
-        </h3>
-        {analytics.conversionRates.length === 0 ? (
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <h3 className={`font-semibold flex items-center gap-2 ${textPrimary(isDark)}`}>
+            <span>💰</span> Conversao por Produto
+          </h3>
+          {analytics.conversionRates.length > 3 && (
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Buscar produto..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={`pl-3 pr-3 py-1.5 rounded-lg border text-xs focus:outline-none transition-all w-44 ${inputBg(isDark)}`}
+              />
+            </div>
+          )}
+        </div>
+        {filteredRates.length === 0 ? (
           <p className={`text-sm text-center py-8 ${textMuted(isDark)}`}>
-            Sem dados de conversao ainda (precisa de try-ons + cliques de compra)
+            {search ? "Nenhum produto encontrado" : "Sem dados de conversao ainda (precisa de try-ons + cliques de compra)"}
           </p>
         ) : (
           <div className="space-y-3">
-            {analytics.conversionRates.map((product) => (
+            {filteredRates.map((product) => (
               <div
                 key={product.productId}
                 className={`flex items-center gap-4 rounded-xl p-4 ${isDark ? "bg-white/[0.02]" : "bg-gray-50"}`}

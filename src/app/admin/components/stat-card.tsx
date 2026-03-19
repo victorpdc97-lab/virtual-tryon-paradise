@@ -22,6 +22,7 @@ export function StatCard({
   label,
   value,
   subtitle,
+  delta,
   icon,
   color,
   isDark = true,
@@ -29,6 +30,7 @@ export function StatCard({
   label: string;
   value: string | number;
   subtitle?: string;
+  delta?: number | null;
   icon: string;
   color: Color;
   isDark?: boolean;
@@ -38,6 +40,17 @@ export function StatCard({
     <div className={`bg-gradient-to-br ${colorMap[color][theme]} border rounded-2xl p-4 sm:p-5`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-2xl">{icon}</span>
+        {delta !== undefined && delta !== null && delta !== 0 && (
+          <span
+            className={`text-[10px] sm:text-xs font-medium px-1.5 py-0.5 rounded-full ${
+              delta > 0
+                ? "bg-green-400/10 text-green-400"
+                : "bg-red-400/10 text-red-400"
+            }`}
+          >
+            {delta > 0 ? "+" : ""}{delta}%
+          </span>
+        )}
       </div>
       <p className={`text-2xl sm:text-3xl font-bold ${textColorMap[color][theme]}`}>
         {value}

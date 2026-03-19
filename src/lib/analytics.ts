@@ -19,8 +19,10 @@ interface AnalyticsStore {
   totalBuyClicks: number;
   products: Record<string, ProductStat>;
   dailyTryOns: Record<string, number>;
+  hourlyTryOns?: Record<string, number>; // "day-hour" → count (e.g. "1-14" = Monday 14h)
   processingTimes?: number[];
   activities?: Activity[];
+  ratings?: { up: number; down: number };
 }
 
 interface AnalyticsData {
@@ -30,6 +32,8 @@ interface AnalyticsData {
   dailyTryOns: Map<string, number>;
   processingTimes: number[];
   activities: Activity[];
+  hourlyTryOns: Map<string, number>; // "dayOfWeek-hour" → count
+  ratings: { up: number; down: number };
 }
 
 const analytics: AnalyticsData = {
@@ -39,6 +43,8 @@ const analytics: AnalyticsData = {
   dailyTryOns: new Map(),
   processingTimes: [],
   activities: [],
+  hourlyTryOns: new Map(),
+  ratings: { up: 0, down: 0 },
 };
 
 function addActivity(type: Activity["type"], label: string) {
@@ -80,6 +86,17 @@ function init(): Promise<void> {
         if (data.activities?.length && analytics.activities.length === 0) {
           analytics.activities = data.activities;
         }
+
+        if (data.hourlyTryOns && analytics.hourlyTryOns.size === 0) {
+          for (const [key, count] of Object.entries(data.hourlyTryOns)) {
+            analytics.hourlyTryOns.set(key, count);
+          }
+        }
+
+        if (data.ratings) {
+          analytics.ratings.up = Math.max(analytics.ratings.up, data.ratings.up || 0);
+          analytics.ratings.down = Math.max(analytics.ratings.down, data.ratings.down || 0);
+        }
       }
     })();
   }
@@ -94,6 +111,8 @@ function getSerializable(): AnalyticsStore {
     dailyTryOns: Object.fromEntries(analytics.dailyTryOns),
     processingTimes: analytics.processingTimes.slice(-100),
     activities: analytics.activities.slice(-50),
+    hourlyTryOns: Object.fromEntries(analytics.hourlyTryOns),
+    ratings: { ...analytics.ratings },
   };
 }
 
@@ -132,6 +151,11 @@ export function trackTryOn(items: Array<{ id: number; name: string }>) {
   const day = today();
   analytics.dailyTryOns.set(day, (analytics.dailyTryOns.get(day) || 0) + 1);
 
+  // Track hourly usage (dayOfWeek-hour, e.g. "1-14" = Monday 14h)
+  const now = new Date();
+  const hourKey = `${now.getDay()}-${now.getHours()}`;
+  analytics.hourlyTryOns.set(hourKey, (analytics.hourlyTryOns.get(hourKey) || 0) + 1);
+
   for (const item of items) {
     const existing = analytics.products.get(item.id);
     if (existing) {
@@ -148,6 +172,19 @@ export function trackTryOn(items: Array<{ id: number; name: string }>) {
     }
   }
 
+  flush();
+}
+
+export function trackAdminLogin(adminLabel: string) {
+  init().catch(() => {});
+  addActivity("lead", `Login: ${adminLabel}`);
+  flush();
+}
+
+export function trackRating(value: "up" | "down") {
+  init().catch(() => {});
+  if (value === "up") analytics.ratings.up++;
+  else analytics.ratings.down++;
   flush();
 }
 
@@ -213,5 +250,7 @@ export async function getAnalytics() {
     dailyStats,
     avgProcessingTime,
     activities: analytics.activities.slice(-30).reverse(),
+    hourlyStats: Object.fromEntries(analytics.hourlyTryOns),
+    ratings: { ...analytics.ratings },
   };
 }

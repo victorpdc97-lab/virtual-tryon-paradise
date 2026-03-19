@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { Lead, LeadSortField, SortDirection } from "../types";
-import { formatDate, formatPhone, exportLeadsCsv, cardBg, textMuted, textSecondary, inputBg } from "../utils";
+import { formatDate, formatPhone, exportLeadsCsv, cardBg, cardInnerBg, textPrimary, textMuted, textSecondary, inputBg } from "../utils";
 
 const LEADS_PER_PAGE = 20;
 
@@ -83,8 +83,36 @@ export function LeadsTab({ leads, isDark }: LeadsTabProps) {
     ? "border-white/10 text-white/50 hover:bg-white/5"
     : "border-gray-200 text-gray-500 hover:bg-gray-100";
 
+  // Lead engagement ranking (score = tryOnCount * 2, sorted desc)
+  const topEngaged = useMemo(() => {
+    return [...leads]
+      .filter((l) => l.tryOnCount > 0)
+      .sort((a, b) => b.tryOnCount - a.tryOnCount)
+      .slice(0, 5);
+  }, [leads]);
+
   return (
     <div className="space-y-4">
+      {/* Top Engaged Leads */}
+      {topEngaged.length > 0 && (
+        <div className={`border rounded-2xl p-5 ${cardBg(isDark)}`}>
+          <h3 className={`font-semibold mb-3 flex items-center gap-2 ${textPrimary(isDark)}`}>
+            <span>🏆</span> Leads Mais Engajados
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+            {topEngaged.map((lead, i) => (
+              <div key={lead.email} className={`rounded-xl p-3 text-center ${cardInnerBg(isDark)}`}>
+                <div className="text-lg mb-1">
+                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                </div>
+                <p className={`text-xs truncate ${textSecondary(isDark)}`}>{lead.email.split("@")[0]}</p>
+                <p className="text-teal-400 text-sm font-bold">{lead.tryOnCount} usos</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Search + Export + Count */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">

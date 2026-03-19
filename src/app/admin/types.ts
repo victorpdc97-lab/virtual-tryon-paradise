@@ -31,8 +31,10 @@ export interface Analytics {
   topBought: ProductStat[];
   conversionRates: ConversionStat[];
   dailyStats: Record<string, number>;
+  hourlyStats: Record<string, number>;
   avgProcessingTime: number | null;
   activities: Activity[];
+  ratings: { up: number; down: number };
 }
 
 export interface DashboardData {
