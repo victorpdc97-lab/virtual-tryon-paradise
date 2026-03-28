@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (body.leadEmail) {
-      incrementLeadTryOn(body.leadEmail);
+      await incrementLeadTryOn(body.leadEmail);
     }
 
     // Process ALL steps sequentially in a single request

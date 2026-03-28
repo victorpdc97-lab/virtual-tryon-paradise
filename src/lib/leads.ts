@@ -31,15 +31,15 @@ function flush() {
   flushToBlob("leads", () => Object.fromEntries(leads));
 }
 
-export function saveLead(email: string, phone: string) {
-  // Trigger init in background (don't block)
-  init().catch(() => {});
+export async function saveLead(email: string, phone: string) {
+  await init();
 
   const key = email.toLowerCase().trim();
   const existing = leads.get(key);
 
   if (existing) {
     existing.phone = phone;
+    flush();
     return;
   }
 
@@ -54,7 +54,9 @@ export function saveLead(email: string, phone: string) {
   flush();
 }
 
-export function incrementLeadTryOn(email: string) {
+export async function incrementLeadTryOn(email: string) {
+  await init();
+
   const key = email.toLowerCase().trim();
   const lead = leads.get(key);
   if (lead) {

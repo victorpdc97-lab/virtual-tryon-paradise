@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    saveLead(email, phone);
+    await saveLead(email, phone);
     trackLeadCreated(email);
 
     return NextResponse.json({ ok: true });
