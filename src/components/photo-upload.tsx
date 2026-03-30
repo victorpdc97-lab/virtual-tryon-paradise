@@ -18,6 +18,7 @@ export function PhotoUpload() {
       setError(null);
       setWarning(null);
       setUploading(true);
+      const uploadStart = Date.now();
 
       try {
         // Compress image client-side before uploading
@@ -64,6 +65,19 @@ export function PhotoUpload() {
 
         // Store preview URL for display, API URL (blob or base64) for try-on calls
         setPhoto(previewUrl, processedFile, apiUrl);
+
+        // Track funnel + timing (fire-and-forget)
+        const uploadDuration = Date.now() - uploadStart;
+        fetch("/api/track-event", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: "funnel", step: "photo_upload" }),
+        }).catch(() => {});
+        fetch("/api/track-event", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: "timing", step: "upload", durationMs: uploadDuration }),
+        }).catch(() => {});
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao processar foto");
       } finally {

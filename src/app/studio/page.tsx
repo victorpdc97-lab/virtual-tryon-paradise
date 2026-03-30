@@ -75,6 +75,8 @@ export default function StudioPage() {
       stepLabel: "Processando seu look...",
     });
 
+    const tryOnStart = Date.now();
+
     try {
       const res = await fetch("/api/try-on", {
         method: "POST",
@@ -115,6 +117,27 @@ export default function StudioPage() {
         totalSteps: data.totalSteps,
         stepLabel: "Look completo!",
       });
+
+      // Track funnel completion + processing timing (fire-and-forget)
+      const processingDuration = Date.now() - tryOnStart;
+      fetch("/api/track-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "funnel", step: "tryon_completed" }),
+      }).catch(() => {});
+      fetch("/api/track-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "timing", step: "processing", durationMs: processingDuration }),
+      }).catch(() => {});
+      // Track cohort activity if lead exists
+      if (lead?.email) {
+        fetch("/api/track-event", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: "cohort_activity", leadCreatedAt: new Date().toISOString() }),
+        }).catch(() => {});
+      }
     } catch {
       setPipelineStatus({
         status: "failed",

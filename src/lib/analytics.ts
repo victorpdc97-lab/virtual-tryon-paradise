@@ -14,15 +14,40 @@ interface Activity {
   ts: number;
 }
 
+interface FunnelCounts {
+  lead_signup: number;
+  photo_upload: number;
+  look_selected: number;
+  tryon_started: number;
+  tryon_completed: number;
+  buy_click: number;
+}
+
+interface TimingEntry {
+  step: "upload" | "selection" | "processing";
+  durationMs: number;
+  ts: number;
+}
+
+// "YYYY-Wnn" → { signups: number; week1: number; week2: number; ... }
+interface CohortEntry {
+  cohortWeek: string;
+  signups: number;
+  returnsByWeek: Record<string, number>; // "week1", "week2", etc. → count of users active
+}
+
 interface AnalyticsStore {
   totalTryOns: number;
   totalBuyClicks: number;
   products: Record<string, ProductStat>;
   dailyTryOns: Record<string, number>;
-  hourlyTryOns?: Record<string, number>; // "day-hour" → count (e.g. "1-14" = Monday 14h)
+  hourlyTryOns?: Record<string, number>;
   processingTimes?: number[];
   activities?: Activity[];
   ratings?: { up: number; down: number };
+  funnel?: FunnelCounts;
+  timings?: TimingEntry[];
+  cohorts?: Record<string, CohortEntry>;
 }
 
 interface AnalyticsData {
@@ -32,8 +57,11 @@ interface AnalyticsData {
   dailyTryOns: Map<string, number>;
   processingTimes: number[];
   activities: Activity[];
-  hourlyTryOns: Map<string, number>; // "dayOfWeek-hour" → count
+  hourlyTryOns: Map<string, number>;
   ratings: { up: number; down: number };
+  funnel: FunnelCounts;
+  timings: TimingEntry[];
+  cohorts: Map<string, CohortEntry>;
 }
 
 const analytics: AnalyticsData = {
@@ -45,6 +73,9 @@ const analytics: AnalyticsData = {
   activities: [],
   hourlyTryOns: new Map(),
   ratings: { up: 0, down: 0 },
+  funnel: { lead_signup: 0, photo_upload: 0, look_selected: 0, tryon_started: 0, tryon_completed: 0, buy_click: 0 },
+  timings: [],
+  cohorts: new Map(),
 };
 
 function addActivity(type: Activity["type"], label: string) {
@@ -97,6 +128,22 @@ function init(): Promise<void> {
           analytics.ratings.up = Math.max(analytics.ratings.up, data.ratings.up || 0);
           analytics.ratings.down = Math.max(analytics.ratings.down, data.ratings.down || 0);
         }
+
+        if (data.funnel) {
+          for (const key of Object.keys(analytics.funnel) as (keyof FunnelCounts)[]) {
+            analytics.funnel[key] = Math.max(analytics.funnel[key], data.funnel[key] || 0);
+          }
+        }
+
+        if (data.timings?.length && analytics.timings.length === 0) {
+          analytics.timings = data.timings;
+        }
+
+        if (data.cohorts && analytics.cohorts.size === 0) {
+          for (const [week, entry] of Object.entries(data.cohorts)) {
+            analytics.cohorts.set(week, entry);
+          }
+        }
       }
     })();
   }
@@ -113,6 +160,9 @@ function getSerializable(): AnalyticsStore {
     activities: analytics.activities.slice(-50),
     hourlyTryOns: Object.fromEntries(analytics.hourlyTryOns),
     ratings: { ...analytics.ratings },
+    funnel: { ...analytics.funnel },
+    timings: analytics.timings.slice(-200),
+    cohorts: Object.fromEntries(analytics.cohorts),
   };
 }
 
@@ -134,17 +184,75 @@ export function trackProcessingTime(durationMs: number) {
   flush();
 }
 
+function getISOWeek(date: Date): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  const weekNum = 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+  return `${d.getFullYear()}-W${String(weekNum).padStart(2, "0")}`;
+}
+
+export function trackFunnelEvent(step: keyof FunnelCounts) {
+  init().catch(() => {});
+  analytics.funnel[step]++;
+  flush();
+}
+
+export function trackTiming(step: TimingEntry["step"], durationMs: number) {
+  init().catch(() => {});
+  analytics.timings.push({ step, durationMs, ts: Date.now() });
+  if (analytics.timings.length > 200) {
+    analytics.timings = analytics.timings.slice(-200);
+  }
+  flush();
+}
+
+export function trackCohortActivity(leadCreatedAt: string) {
+  init().catch(() => {});
+  const cohortWeek = getISOWeek(new Date(leadCreatedAt));
+  const currentWeek = getISOWeek(new Date());
+
+  const entry = analytics.cohorts.get(cohortWeek) || {
+    cohortWeek,
+    signups: 0,
+    returnsByWeek: {},
+  };
+
+  // Calculate weeks since cohort start
+  const cohortDate = new Date(leadCreatedAt);
+  const now = new Date();
+  const weeksDiff = Math.floor((now.getTime() - cohortDate.getTime()) / (7 * 86400000));
+  const weekKey = `week${weeksDiff}`;
+
+  entry.returnsByWeek[weekKey] = (entry.returnsByWeek[weekKey] || 0) + 1;
+  analytics.cohorts.set(cohortWeek, entry);
+  flush();
+}
+
 export function trackLeadCreated(email: string) {
   init().catch(() => {});
+  analytics.funnel.lead_signup++;
   addActivity("lead", email);
+
+  // Initialize cohort for this week
+  const cohortWeek = getISOWeek(new Date());
+  const entry = analytics.cohorts.get(cohortWeek) || {
+    cohortWeek,
+    signups: 0,
+    returnsByWeek: {},
+  };
+  entry.signups++;
+  analytics.cohorts.set(cohortWeek, entry);
+
   flush();
 }
 
 export function trackTryOn(items: Array<{ id: number; name: string }>) {
-  // Trigger init in background
   init().catch(() => {});
 
   analytics.totalTryOns++;
+  analytics.funnel.tryon_started++;
   const names = items.map((i) => i.name).filter(Boolean);
   addActivity("tryon", names.length > 0 ? names.join(", ") : "try-on");
 
@@ -188,10 +296,17 @@ export function trackRating(value: "up" | "down") {
   flush();
 }
 
+export function trackTryOnCompleted() {
+  init().catch(() => {});
+  analytics.funnel.tryon_completed++;
+  flush();
+}
+
 export function trackBuyClick(productId: number, productName: string) {
   init().catch(() => {});
 
   analytics.totalBuyClicks++;
+  analytics.funnel.buy_click++;
   addActivity("buy", productName || `Produto #${productId}`);
 
   const existing = analytics.products.get(productId);
@@ -238,6 +353,42 @@ export async function getAnalytics() {
     ? Math.round(times.reduce((a, b) => a + b, 0) / times.length / 1000)
     : null;
 
+  // Timing stats by step
+  const timingsByStep: Record<string, number[]> = {};
+  for (const t of analytics.timings) {
+    if (!timingsByStep[t.step]) timingsByStep[t.step] = [];
+    timingsByStep[t.step].push(t.durationMs);
+  }
+  const timingStats: Record<string, { avg: number; p50: number; p90: number; count: number }> = {};
+  for (const [step, durations] of Object.entries(timingsByStep)) {
+    const sorted = [...durations].sort((a, b) => a - b);
+    const avg = Math.round(sorted.reduce((a, b) => a + b, 0) / sorted.length);
+    const p50 = sorted[Math.floor(sorted.length * 0.5)] || 0;
+    const p90 = sorted[Math.floor(sorted.length * 0.9)] || 0;
+    timingStats[step] = { avg, p50, p90, count: sorted.length };
+  }
+
+  // Processing time distribution
+  const processingDistribution = { under60: 0, under120: 0, over120: 0 };
+  for (const ms of analytics.processingTimes) {
+    const s = ms / 1000;
+    if (s < 60) processingDistribution.under60++;
+    else if (s < 120) processingDistribution.under120++;
+    else processingDistribution.over120++;
+  }
+
+  // Cohort data sorted by week
+  const cohorts = Array.from(analytics.cohorts.values())
+    .sort((a, b) => a.cohortWeek.localeCompare(b.cohortWeek))
+    .slice(-12); // Last 12 weeks
+
+  // Credits projection (estimate days remaining based on recent daily usage)
+  const dailyEntries = Object.entries(analytics.dailyTryOns).sort(([a], [b]) => b.localeCompare(a));
+  const last7Days = dailyEntries.slice(0, 7);
+  const avgDailyTryOns = last7Days.length > 0
+    ? last7Days.reduce((sum, [, c]) => sum + c, 0) / last7Days.length
+    : 0;
+
   return {
     totalTryOns: analytics.totalTryOns,
     totalBuyClicks: analytics.totalBuyClicks,
@@ -252,5 +403,10 @@ export async function getAnalytics() {
     activities: analytics.activities.slice(-30).reverse(),
     hourlyStats: Object.fromEntries(analytics.hourlyTryOns),
     ratings: { ...analytics.ratings },
+    funnel: { ...analytics.funnel },
+    timingStats,
+    processingDistribution,
+    cohorts,
+    avgDailyTryOns: Math.round(avgDailyTryOns * 10) / 10,
   };
 }

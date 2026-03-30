@@ -22,6 +22,9 @@ import { ActivityLog } from "./activity-log";
 import { RetentionChart } from "./retention-chart";
 import { HeatmapChart } from "./heatmap-chart";
 import { FeedbackCard } from "./feedback-card";
+import { GranularFunnel } from "./granular-funnel";
+import { TimingMetrics } from "./timing-metrics";
+import { CohortGrid } from "./cohort-grid";
 
 interface OverviewTabProps {
   analytics: Analytics;
@@ -153,7 +156,23 @@ export function OverviewTab({ analytics, leads, credits, isDark }: OverviewTabPr
         />
       </div>
 
-      {/* Funnel */}
+      {/* Granular Funnel (6 steps) */}
+      <GranularFunnel funnel={analytics.funnel} isDark={isDark} />
+
+      {/* Timing Metrics + Processing Distribution + Credits Projection */}
+      <TimingMetrics
+        timingStats={analytics.timingStats}
+        processingDistribution={analytics.processingDistribution}
+        avgProcessingTime={analytics.avgProcessingTime}
+        avgDailyTryOns={analytics.avgDailyTryOns}
+        credits={credits}
+        isDark={isDark}
+      />
+
+      {/* Cohort Analysis (real retention grid) */}
+      <CohortGrid cohorts={analytics.cohorts} isDark={isDark} />
+
+      {/* Legacy Funnel (simple 3-step) */}
       <FunnelCard analytics={analytics} leadsCount={leads.length} isDark={isDark} />
 
       {/* Recent leads + Daily stats side by side */}

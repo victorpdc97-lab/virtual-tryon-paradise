@@ -23,6 +23,28 @@ export interface Activity {
   ts: number;
 }
 
+export interface FunnelCounts {
+  lead_signup: number;
+  photo_upload: number;
+  look_selected: number;
+  tryon_started: number;
+  tryon_completed: number;
+  buy_click: number;
+}
+
+export interface TimingStat {
+  avg: number;
+  p50: number;
+  p90: number;
+  count: number;
+}
+
+export interface CohortEntry {
+  cohortWeek: string;
+  signups: number;
+  returnsByWeek: Record<string, number>;
+}
+
 export interface Analytics {
   totalTryOns: number;
   totalBuyClicks: number;
@@ -35,6 +57,11 @@ export interface Analytics {
   avgProcessingTime: number | null;
   activities: Activity[];
   ratings: { up: number; down: number };
+  funnel: FunnelCounts;
+  timingStats: Record<string, TimingStat>;
+  processingDistribution: { under60: number; under120: number; over120: number };
+  cohorts: CohortEntry[];
+  avgDailyTryOns: number;
 }
 
 export interface DashboardData {

@@ -55,12 +55,21 @@ export const useTryOnStore = create<TryOnStore>((set, get) => ({
 
   selectItem: (product) => {
     const state = get();
+    const hadItems = [state.selectedItems.tops, state.selectedItems.bottoms, state.selectedItems.shoes].some(Boolean);
     set({
       selectedItems: {
         ...state.selectedItems,
         [product.category]: product,
       },
     });
+    // Track first item selection in funnel (fire-and-forget)
+    if (!hadItems) {
+      fetch("/api/track-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: "funnel", step: "look_selected" }),
+      }).catch(() => {});
+    }
   },
 
   removeItem: (category) => {
