@@ -174,10 +174,9 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function trackProcessingTime(durationMs: number) {
-  init().catch(() => {});
+export async function trackProcessingTime(durationMs: number) {
+  await init();
   analytics.processingTimes.push(durationMs);
-  // Keep last 100 entries
   if (analytics.processingTimes.length > 100) {
     analytics.processingTimes = analytics.processingTimes.slice(-100);
   }
@@ -193,14 +192,14 @@ function getISOWeek(date: Date): string {
   return `${d.getFullYear()}-W${String(weekNum).padStart(2, "0")}`;
 }
 
-export function trackFunnelEvent(step: keyof FunnelCounts) {
-  init().catch(() => {});
+export async function trackFunnelEvent(step: keyof FunnelCounts) {
+  await init();
   analytics.funnel[step]++;
   flush();
 }
 
-export function trackTiming(step: TimingEntry["step"], durationMs: number) {
-  init().catch(() => {});
+export async function trackTiming(step: TimingEntry["step"], durationMs: number) {
+  await init();
   analytics.timings.push({ step, durationMs, ts: Date.now() });
   if (analytics.timings.length > 200) {
     analytics.timings = analytics.timings.slice(-200);
@@ -208,10 +207,9 @@ export function trackTiming(step: TimingEntry["step"], durationMs: number) {
   flush();
 }
 
-export function trackCohortActivity(leadCreatedAt: string) {
-  init().catch(() => {});
+export async function trackCohortActivity(leadCreatedAt: string) {
+  await init();
   const cohortWeek = getISOWeek(new Date(leadCreatedAt));
-  const currentWeek = getISOWeek(new Date());
 
   const entry = analytics.cohorts.get(cohortWeek) || {
     cohortWeek,
@@ -219,7 +217,6 @@ export function trackCohortActivity(leadCreatedAt: string) {
     returnsByWeek: {},
   };
 
-  // Calculate weeks since cohort start
   const cohortDate = new Date(leadCreatedAt);
   const now = new Date();
   const weeksDiff = Math.floor((now.getTime() - cohortDate.getTime()) / (7 * 86400000));
@@ -230,12 +227,11 @@ export function trackCohortActivity(leadCreatedAt: string) {
   flush();
 }
 
-export function trackLeadCreated(email: string) {
-  init().catch(() => {});
+export async function trackLeadCreated(email: string) {
+  await init();
   analytics.funnel.lead_signup++;
   addActivity("lead", email);
 
-  // Initialize cohort for this week
   const cohortWeek = getISOWeek(new Date());
   const entry = analytics.cohorts.get(cohortWeek) || {
     cohortWeek,
@@ -248,8 +244,8 @@ export function trackLeadCreated(email: string) {
   flush();
 }
 
-export function trackTryOn(items: Array<{ id: number; name: string }>) {
-  init().catch(() => {});
+export async function trackTryOn(items: Array<{ id: number; name: string }>) {
+  await init();
 
   analytics.totalTryOns++;
   analytics.funnel.tryon_started++;
@@ -259,7 +255,6 @@ export function trackTryOn(items: Array<{ id: number; name: string }>) {
   const day = today();
   analytics.dailyTryOns.set(day, (analytics.dailyTryOns.get(day) || 0) + 1);
 
-  // Track hourly usage (dayOfWeek-hour, e.g. "1-14" = Monday 14h)
   const now = new Date();
   const hourKey = `${now.getDay()}-${now.getHours()}`;
   analytics.hourlyTryOns.set(hourKey, (analytics.hourlyTryOns.get(hourKey) || 0) + 1);
@@ -283,27 +278,27 @@ export function trackTryOn(items: Array<{ id: number; name: string }>) {
   flush();
 }
 
-export function trackAdminLogin(adminLabel: string) {
-  init().catch(() => {});
+export async function trackAdminLogin(adminLabel: string) {
+  await init();
   addActivity("lead", `Login: ${adminLabel}`);
   flush();
 }
 
-export function trackRating(value: "up" | "down") {
-  init().catch(() => {});
+export async function trackRating(value: "up" | "down") {
+  await init();
   if (value === "up") analytics.ratings.up++;
   else analytics.ratings.down++;
   flush();
 }
 
-export function trackTryOnCompleted() {
-  init().catch(() => {});
+export async function trackTryOnCompleted() {
+  await init();
   analytics.funnel.tryon_completed++;
   flush();
 }
 
-export function trackBuyClick(productId: number, productName: string) {
-  init().catch(() => {});
+export async function trackBuyClick(productId: number, productName: string) {
+  await init();
 
   analytics.totalBuyClicks++;
   analytics.funnel.buy_click++;

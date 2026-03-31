@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     if (!productId) {
       return NextResponse.json({ error: "productId obrigatório" }, { status: 400 });
     }
-    trackBuyClick(productId, productName || "");
+    await trackBuyClick(productId, productName || "");
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Erro ao rastrear" }, { status: 500 });

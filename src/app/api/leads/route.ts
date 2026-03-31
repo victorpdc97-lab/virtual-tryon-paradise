@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     await saveLead(email, phone);
-    trackLeadCreated(email);
+    await trackLeadCreated(email);
 
     return NextResponse.json({ ok: true });
   } catch {

@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const { event, data } = await req.json();
 
     if (event === "result_rating" && data?.rating) {
-      trackRating(data.rating);
+      await trackRating(data.rating);
       return NextResponse.json({ ok: true });
     }
 

@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     );
 
     // Track analytics
-    trackTryOn(
+    await trackTryOn(
       body.items
         .filter((item) => item.productId)
         .map((item) => ({ id: item.productId!, name: item.productName || "" }))
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Track processing time
-    trackProcessingTime(Date.now() - startTime);
+    await trackProcessingTime(Date.now() - startTime);
 
     return NextResponse.json({
       status: "completed",

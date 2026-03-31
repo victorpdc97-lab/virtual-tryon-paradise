@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     const data = await getDashboardData();
 
     // Track login activity
-    trackAdminLogin(`Admin ${adminIndex + 1}`);
+    await trackAdminLogin(`Admin ${adminIndex + 1}`);
 
     return NextResponse.json({ ...data, token, adminId: adminIndex + 1 });
   } catch {

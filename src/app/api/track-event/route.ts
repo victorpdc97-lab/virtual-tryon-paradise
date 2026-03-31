@@ -14,21 +14,21 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "step inválido" }, { status: 400 });
       }
       if (step === "tryon_completed") {
-        trackTryOnCompleted();
+        await trackTryOnCompleted();
       } else {
-        trackFunnelEvent(step);
+        await trackFunnelEvent(step);
       }
     } else if (event === "timing") {
       const validSteps: TimingStep[] = ["upload", "selection", "processing"];
       if (!validSteps.includes(step) || typeof durationMs !== "number") {
         return NextResponse.json({ error: "step ou durationMs inválido" }, { status: 400 });
       }
-      trackTiming(step, durationMs);
+      await trackTiming(step, durationMs);
     } else if (event === "cohort_activity") {
       if (!leadCreatedAt) {
         return NextResponse.json({ error: "leadCreatedAt obrigatório" }, { status: 400 });
       }
-      trackCohortActivity(leadCreatedAt);
+      await trackCohortActivity(leadCreatedAt);
     } else {
       return NextResponse.json({ error: "event inválido" }, { status: 400 });
     }
