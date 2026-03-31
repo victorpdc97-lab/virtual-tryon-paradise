@@ -101,65 +101,130 @@ export function costPerConversion(totalTryOns: number, totalBuyClicks: number): 
   return cost.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+export interface SummaryLine {
+  text: string;
+  severity: "info" | "warning" | "critical" | "success";
+}
+
 export function generateExecutiveSummary(
-  analytics: { totalTryOns: number; totalBuyClicks: number; overallConversion: number; dailyStats: Record<string, number>; avgProcessingTime: number | null; topTried: Array<{ productName: string; tryOnCount: number }>; conversionRates: Array<{ productName: string; conversionRate: number }> },
-  leads: Array<{ tryOnCount: number; createdAt: string }>,
+  analytics: {
+    totalTryOns: number;
+    totalBuyClicks: number;
+    overallConversion: number;
+    dailyStats: Record<string, number>;
+    avgProcessingTime: number | null;
+    topTried: Array<{ productName: string; tryOnCount: number; buyClickCount: number }>;
+    conversionRates: Array<{ productName: string; conversionRate: number }>;
+    hourlyStats: Record<string, number>;
+    avgDailyTryOns: number;
+  },
+  leads: Array<{ tryOnCount: number; createdAt: string; lastTryOn: string | null }>,
   credits: number
-): string[] {
-  const lines: string[] = [];
+): SummaryLine[] {
+  const lines: SummaryLine[] = [];
   const today = new Date().toISOString().slice(0, 10);
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
   const fourteenDaysAgo = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
 
-  // Weekly try-ons comparison
+  // --- CRITICAL ALERTS (top of summary) ---
+
+  // Credits projection
+  if (credits >= 0) {
+    const dailyBurn = analytics.avgDailyTryOns * 4; // 4 credits per try-on
+    const daysLeft = dailyBurn > 0 ? Math.round(credits / dailyBurn) : null;
+    if (daysLeft !== null && daysLeft <= 3) {
+      lines.push({ text: `URGENTE: Creditos acabam em ~${daysLeft} dia${daysLeft !== 1 ? "s" : ""} (${credits} restantes, ${Math.round(dailyBurn)}/dia)`, severity: "critical" });
+    } else if (daysLeft !== null && daysLeft <= 7) {
+      lines.push({ text: `Creditos acabam em ~${daysLeft} dias (${credits} restantes) — considere recarregar`, severity: "warning" });
+    }
+  }
+
+  // Products with many try-ons but zero purchases
+  const zeroConversionProducts = analytics.topTried.filter((p) => p.tryOnCount >= 5 && p.buyClickCount === 0);
+  if (zeroConversionProducts.length > 0) {
+    const names = zeroConversionProducts.slice(0, 2).map((p) => p.productName).join(", ");
+    const extra = zeroConversionProducts.length > 2 ? ` (+${zeroConversionProducts.length - 2})` : "";
+    lines.push({ text: `${names}${extra}: ${zeroConversionProducts.reduce((s, p) => s + p.tryOnCount, 0)} try-ons e 0 compras — verificar preco/foto`, severity: "warning" });
+  }
+
+  // --- WEEKLY COMPARISON ---
+
   let thisWeek = 0, lastWeek = 0;
   for (const [date, count] of Object.entries(analytics.dailyStats)) {
     if (date >= sevenDaysAgo) thisWeek += count;
     else if (date >= fourteenDaysAgo) lastWeek += count;
   }
-  if (thisWeek > 0) {
-    if (lastWeek > 0) {
-      const pct = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
-      const dir = pct > 0 ? "+" : "";
-      lines.push(`Esta semana: ${thisWeek} try-ons (${dir}${pct}% vs anterior)`);
+  if (thisWeek > 0 && lastWeek > 0) {
+    const pct = Math.round(((thisWeek - lastWeek) / lastWeek) * 100);
+    if (pct <= -30) {
+      lines.push({ text: `Try-ons caíram ${Math.abs(pct)}% essa semana (${thisWeek} vs ${lastWeek}) — investigar`, severity: "warning" });
+    } else if (pct >= 30) {
+      lines.push({ text: `Try-ons subiram ${pct}% essa semana (${thisWeek} vs ${lastWeek})`, severity: "success" });
     } else {
-      lines.push(`Esta semana: ${thisWeek} try-ons`);
+      lines.push({ text: `Esta semana: ${thisWeek} try-ons (${pct > 0 ? "+" : ""}${pct}% vs anterior)`, severity: "info" });
+    }
+  } else if (thisWeek > 0) {
+    lines.push({ text: `Esta semana: ${thisWeek} try-ons`, severity: "info" });
+  }
+
+  // --- ABANDONMENT TREND ---
+
+  const abandonedTotal = leads.filter((l) => l.tryOnCount === 0).length;
+  const abandonRate = leads.length > 0 ? Math.round((abandonedTotal / leads.length) * 100) : 0;
+  const recentLeads = leads.filter((l) => l.createdAt >= sevenDaysAgo);
+  const recentAbandoned = recentLeads.filter((l) => l.tryOnCount === 0).length;
+  const recentAbandonRate = recentLeads.length > 0 ? Math.round((recentAbandoned / recentLeads.length) * 100) : 0;
+
+  if (recentLeads.length >= 3 && recentAbandonRate > abandonRate + 15) {
+    lines.push({ text: `Taxa de abandono subiu para ${recentAbandonRate}% essa semana (era ${abandonRate}% geral) — verificar UX do upload`, severity: "warning" });
+  } else if (abandonedTotal > 0) {
+    lines.push({ text: `${abandonedTotal} lead${abandonedTotal > 1 ? "s" : ""} sem try-on (${abandonRate}%) — oportunidade de follow-up`, severity: "info" });
+  }
+
+  // --- INACTIVE LEADS ---
+
+  const inactiveLeads = leads.filter((l) => {
+    if (l.tryOnCount === 0) return false;
+    const lastActive = l.lastTryOn || l.createdAt;
+    return (Date.now() - new Date(lastActive).getTime()) / 86400000 > 7;
+  });
+  if (inactiveLeads.length >= 3) {
+    lines.push({ text: `${inactiveLeads.length} leads inativos ha +7 dias — reengajar via WhatsApp`, severity: "info" });
+  }
+
+  // --- PEAK HOUR INSIGHT ---
+
+  const hourlyEntries = Object.entries(analytics.hourlyStats);
+  if (hourlyEntries.length > 0) {
+    let bestKey = "", bestCount = 0;
+    for (const [key, count] of hourlyEntries) {
+      if (count > bestCount) { bestKey = key; bestCount = count; }
+    }
+    const [dayStr, hourStr] = bestKey.split("-");
+    const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+    const dayName = days[parseInt(dayStr)] || dayStr;
+    lines.push({ text: `Melhor horario para campanhas: ${dayName} ${hourStr}h (${bestCount} try-ons nesse slot)`, severity: "info" });
+  }
+
+  // --- POSITIVE HIGHLIGHTS ---
+
+  const newLeads = leads.filter((l) => l.createdAt >= sevenDaysAgo).length;
+  if (newLeads > 0) {
+    lines.push({ text: `${newLeads} lead${newLeads > 1 ? "s" : ""} novo${newLeads > 1 ? "s" : ""} nos ultimos 7 dias`, severity: newLeads >= 10 ? "success" : "info" });
+  }
+
+  if (analytics.conversionRates.length > 0) {
+    const best = analytics.conversionRates[0];
+    if (best.conversionRate >= 50) {
+      lines.push({ text: `Destaque: ${best.productName} com ${best.conversionRate}% de conversao`, severity: "success" });
     }
   }
 
-  // New leads this week
-  const newLeads = leads.filter((l) => l.createdAt >= sevenDaysAgo).length;
-  if (newLeads > 0) lines.push(`${newLeads} lead${newLeads > 1 ? "s" : ""} novo${newLeads > 1 ? "s" : ""} nos ultimos 7 dias`);
-
-  // Top product
-  if (analytics.topTried.length > 0) {
-    const top = analytics.topTried[0];
-    lines.push(`Produto mais experimentado: ${top.productName} (${top.tryOnCount}x)`);
-  }
-
-  // Best conversion
-  if (analytics.conversionRates.length > 0) {
-    const best = analytics.conversionRates[0];
-    lines.push(`Melhor conversao: ${best.productName} (${best.conversionRate}%)`);
-  }
-
-  // Abandoned leads
-  const abandoned = leads.filter((l) => l.tryOnCount === 0).length;
-  if (abandoned > 0) lines.push(`${abandoned} lead${abandoned > 1 ? "s" : ""} sem try-on — oportunidade de follow-up`);
-
-  // Processing time
-  if (analytics.avgProcessingTime) {
-    lines.push(`Tempo medio de processamento: ${analytics.avgProcessingTime}s`);
-  }
-
-  // Credits warning
-  if (credits >= 0 && credits < 100) {
-    lines.push(`Creditos Fashn: ${credits} restantes${credits < 50 ? " — recarregar!" : ""}`);
-  }
-
-  // Today's try-ons
+  // Today's activity
   const todayCount = analytics.dailyStats[today] || 0;
-  if (todayCount > 0) lines.push(`Hoje: ${todayCount} try-on${todayCount > 1 ? "s" : ""}`);
+  if (todayCount > 0) {
+    lines.push({ text: `Hoje: ${todayCount} try-on${todayCount > 1 ? "s" : ""}`, severity: "info" });
+  }
 
   return lines;
 }

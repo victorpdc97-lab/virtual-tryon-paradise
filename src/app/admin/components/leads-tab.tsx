@@ -6,6 +6,8 @@ import { formatDate, formatPhone, exportLeadsCsv, cardBg, cardInnerBg, textPrima
 
 const LEADS_PER_PAGE = 20;
 
+type LeadFilter = "all" | "never_used" | "used_once" | "recurrent" | "inactive_7d";
+
 interface LeadsTabProps {
   leads: Lead[];
   isDark: boolean;
@@ -18,11 +20,26 @@ const COLUMNS: Array<{ field: LeadSortField; label: string; span: string }> = [
   { field: "lastTryOn", label: "Ultimo Uso", span: "col-span-2" },
 ];
 
+function matchesFilter(lead: Lead, filter: LeadFilter): boolean {
+  switch (filter) {
+    case "all": return true;
+    case "never_used": return lead.tryOnCount === 0;
+    case "used_once": return lead.tryOnCount === 1;
+    case "recurrent": return lead.tryOnCount > 1;
+    case "inactive_7d": {
+      const lastActive = lead.lastTryOn || lead.createdAt;
+      const daysAgo = (Date.now() - new Date(lastActive).getTime()) / 86400000;
+      return daysAgo > 7 && lead.tryOnCount > 0;
+    }
+  }
+}
+
 export function LeadsTab({ leads, isDark }: LeadsTabProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<LeadSortField>("createdAt");
   const [sortDir, setSortDir] = useState<SortDirection>("desc");
+  const [filter, setFilter] = useState<LeadFilter>("all");
 
   const handleSort = (field: LeadSortField) => {
     if (sortField === field) {
@@ -34,8 +51,25 @@ export function LeadsTab({ leads, isDark }: LeadsTabProps) {
     setPage(1);
   };
 
+  // Filter counts
+  const filterCounts = useMemo(() => ({
+    all: leads.length,
+    never_used: leads.filter((l) => matchesFilter(l, "never_used")).length,
+    used_once: leads.filter((l) => matchesFilter(l, "used_once")).length,
+    recurrent: leads.filter((l) => matchesFilter(l, "recurrent")).length,
+    inactive_7d: leads.filter((l) => matchesFilter(l, "inactive_7d")).length,
+  }), [leads]);
+
+  const FILTERS: Array<{ id: LeadFilter; label: string; color?: string }> = [
+    { id: "all", label: "Todos" },
+    { id: "never_used", label: "Nunca usou", color: "text-red-400" },
+    { id: "used_once", label: "Usou 1x", color: "text-amber-400" },
+    { id: "recurrent", label: "Recorrente", color: "text-green-400" },
+    { id: "inactive_7d", label: "Inativo >7d", color: "text-orange-400" },
+  ];
+
   const sorted = useMemo(() => {
-    const arr = [...leads];
+    const arr = leads.filter((l) => matchesFilter(l, filter));
     arr.sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
@@ -58,7 +92,7 @@ export function LeadsTab({ leads, isDark }: LeadsTabProps) {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return arr;
-  }, [leads, sortField, sortDir]);
+  }, [leads, filter, sortField, sortDir]);
 
   const filtered = search
     ? sorted.filter(
@@ -112,6 +146,32 @@ export function LeadsTab({ leads, isDark }: LeadsTabProps) {
           </div>
         </div>
       )}
+
+      {/* Status Filters */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {FILTERS.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => { setFilter(f.id); setPage(1); }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+              filter === f.id
+                ? "bg-teal-400 text-black"
+                : isDark
+                ? "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                : "bg-gray-200/60 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+            }`}
+          >
+            {f.label}
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none ${
+              filter === f.id
+                ? "bg-black/20 text-black"
+                : isDark ? "bg-white/10 text-white/40" : "bg-gray-300/60 text-gray-500"
+            }`}>
+              {filterCounts[f.id]}
+            </span>
+          </button>
+        ))}
+      </div>
 
       {/* Search + Export + Count */}
       <div className="flex items-center gap-3 flex-wrap">
