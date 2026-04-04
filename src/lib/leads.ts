@@ -1,11 +1,20 @@
 import { loadFromBlob, flushToBlob } from "./persistence";
 
+export interface LeadEvent {
+  type: "signup" | "photo_upload" | "product_selected" | "product_removed"
+      | "tryon_started" | "tryon_completed" | "tryon_failed"
+      | "buy_click" | "rating" | "download";
+  data?: Record<string, string | number>;
+  ts: number;
+}
+
 interface Lead {
   email: string;
   phone: string;
   createdAt: string;
   tryOnCount: number;
   lastTryOn: string | null;
+  events: LeadEvent[];
 }
 
 const leads = new Map<string, Lead>();
@@ -49,6 +58,7 @@ export async function saveLead(email: string, phone: string) {
     createdAt: new Date().toISOString(),
     tryOnCount: 0,
     lastTryOn: null,
+    events: [{ type: "signup", ts: Date.now() }],
   });
 
   flush();
@@ -66,9 +76,29 @@ export async function incrementLeadTryOn(email: string) {
   }
 }
 
+const MAX_EVENTS_PER_LEAD = 100;
+
+export async function trackLeadEvent(email: string, event: Omit<LeadEvent, "ts">) {
+  await init();
+
+  const key = email.toLowerCase().trim();
+  const lead = leads.get(key);
+  if (!lead) return;
+
+  if (!lead.events) lead.events = [];
+  lead.events.push({ ...event, ts: Date.now() });
+  if (lead.events.length > MAX_EVENTS_PER_LEAD) {
+    lead.events = lead.events.slice(-MAX_EVENTS_PER_LEAD);
+  }
+
+  flush();
+}
+
 export async function getLeads() {
   await init();
-  return Array.from(leads.values()).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  return Array.from(leads.values())
+    .map((l) => ({ ...l, events: l.events || [] }))
+    .sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 }

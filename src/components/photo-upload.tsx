@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { useTryOnStore } from "@/store/use-tryon-store";
 
 export function PhotoUpload() {
-  const { photoUrl, setPhoto, clearPhoto } = useTryOnStore();
+  const { photoUrl, setPhoto, clearPhoto, lead } = useTryOnStore();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -40,6 +40,7 @@ export function PhotoUpload() {
           // Try uploading to Vercel Blob for a public URL
           const formData = new FormData();
           formData.append("photo", processedFile);
+          if (lead?.email) formData.append("email", lead.email);
 
           const res = await fetch("/api/upload", {
             method: "POST",

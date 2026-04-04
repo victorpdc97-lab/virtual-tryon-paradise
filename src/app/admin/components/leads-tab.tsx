@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import type { Lead, LeadSortField, SortDirection } from "../types";
 import { formatDate, formatPhone, exportLeadsCsv, cardBg, cardInnerBg, textPrimary, textMuted, textSecondary, inputBg } from "../utils";
+import { LeadTimelineModal } from "./lead-timeline-modal";
 
 const LEADS_PER_PAGE = 20;
 
@@ -40,6 +41,7 @@ export function LeadsTab({ leads, isDark }: LeadsTabProps) {
   const [sortField, setSortField] = useState<LeadSortField>("createdAt");
   const [sortDir, setSortDir] = useState<SortDirection>("desc");
   const [filter, setFilter] = useState<LeadFilter>("all");
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const handleSort = (field: LeadSortField) => {
     if (sortField === field) {
@@ -243,8 +245,9 @@ export function LeadsTab({ leads, isDark }: LeadsTabProps) {
             {paginated.map((lead) => (
               <div
                 key={lead.email}
-                className={`grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 transition-colors ${
-                  isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50"
+                onClick={() => setSelectedLead(lead)}
+                className={`grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-4 transition-colors cursor-pointer ${
+                  isDark ? "hover:bg-white/[0.04]" : "hover:bg-gray-50"
                 }`}
               >
                 <div className="sm:col-span-4">
@@ -334,6 +337,14 @@ export function LeadsTab({ leads, isDark }: LeadsTabProps) {
             </button>
           </div>
         </div>
+      )}
+      {/* Timeline Modal */}
+      {selectedLead && (
+        <LeadTimelineModal
+          lead={selectedLead}
+          isDark={isDark}
+          onClose={() => setSelectedLead(null)}
+        />
       )}
     </div>
   );

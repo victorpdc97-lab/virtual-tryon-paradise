@@ -3,7 +3,7 @@ import { startTryOn, waitForCompletion } from "@/lib/fashn";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { trackTryOn, trackProcessingTime } from "@/lib/analytics";
-import { incrementLeadTryOn } from "@/lib/leads";
+import { incrementLeadTryOn, trackLeadEvent } from "@/lib/leads";
 
 interface TryOnRequestBody {
   photoUrl: string;
@@ -20,6 +20,7 @@ interface TryOnRequestBody {
 export const maxDuration = 300; // 5 min max for Vercel serverless
 
 export async function POST(req: NextRequest) {
+  let leadEmail: string | undefined;
   try {
     const ip = getClientIp(req);
 
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body: TryOnRequestBody = await req.json();
+    leadEmail = body.leadEmail;
 
     if (!body.photoUrl || !body.items?.length) {
       return NextResponse.json(
@@ -71,6 +73,10 @@ export async function POST(req: NextRequest) {
 
     if (body.leadEmail) {
       await incrementLeadTryOn(body.leadEmail);
+      await trackLeadEvent(body.leadEmail, {
+        type: "tryon_started",
+        data: { steps: sortedItems.length },
+      });
     }
 
     // Process ALL steps sequentially in a single request
@@ -82,6 +88,12 @@ export async function POST(req: NextRequest) {
 
       const { id, error } = await startTryOn(currentImage, step.imageUrl, step.category);
       if (error) {
+        if (body.leadEmail) {
+          await trackLeadEvent(body.leadEmail, {
+            type: "tryon_failed",
+            data: { error: `step ${i + 1}: ${error}` },
+          });
+        }
         return NextResponse.json(
           { error: `Erro no step ${i + 1}: ${error}` },
           { status: 500 }
@@ -93,7 +105,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Track processing time
-    await trackProcessingTime(Date.now() - startTime);
+    const durationMs = Date.now() - startTime;
+    await trackProcessingTime(durationMs);
+
+    if (body.leadEmail) {
+      await trackLeadEvent(body.leadEmail, {
+        type: "tryon_completed",
+        data: { durationMs, steps: sortedItems.length },
+      });
+    }
 
     return NextResponse.json({
       status: "completed",
@@ -104,6 +124,14 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";
     console.error("Try-on error:", message);
+
+    if (leadEmail) {
+      trackLeadEvent(leadEmail, {
+        type: "tryon_failed",
+        data: { error: message },
+      }).catch(() => {});
+    }
+
     return NextResponse.json(
       { error: message },
       { status: 500 }

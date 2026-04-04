@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { trackLeadEvent } from "@/lib/leads";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -32,6 +33,15 @@ export async function POST(req: NextRequest) {
       access: "public",
       addRandomSuffix: true,
     });
+
+    // Track photo_upload event on lead
+    const email = formData.get("email") as string | null;
+    if (email) {
+      trackLeadEvent(email, {
+        type: "photo_upload",
+        data: { sizeKb: Math.round(file.size / 1024) },
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ url: blob.url });
   } catch (error) {

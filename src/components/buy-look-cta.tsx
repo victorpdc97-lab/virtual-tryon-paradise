@@ -6,16 +6,16 @@ import type { Product } from "@/types";
 import { showToast } from "./toast";
 import { ResultRating } from "./result-rating";
 
-function trackBuy(item: Product) {
+function trackBuy(item: Product, email?: string) {
   fetch("/api/track-buy", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ productId: item.id, productName: item.name }),
+    body: JSON.stringify({ productId: item.id, productName: item.name, email }),
   }).catch(() => {});
 }
 
 export function BuyLookCta() {
-  const { pipeline, getSelectedList, resetPipeline, clearItems } = useTryOnStore();
+  const { pipeline, getSelectedList, resetPipeline, clearItems, lead } = useTryOnStore();
   const items = getSelectedList();
 
   if (pipeline.status !== "completed" || items.length === 0) return null;
@@ -31,14 +31,14 @@ export function BuyLookCta() {
   };
 
   const handleBuyAll = () => {
-    items.forEach(trackBuy);
+    items.forEach((item) => trackBuy(item, lead?.email));
     for (const item of items) {
       window.open(item.nuvemshopUrl, "_blank");
     }
   };
 
   const handleBuySingle = (item: Product) => {
-    trackBuy(item);
+    trackBuy(item, lead?.email);
     window.open(item.nuvemshopUrl, "_blank");
   };
 
@@ -114,6 +114,13 @@ export function BuyLookCta() {
                 a.click();
                 URL.revokeObjectURL(url);
                 showToast("Imagem baixada!");
+                if (lead?.email) {
+                  fetch("/api/track-lead-event", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: lead.email, type: "download" }),
+                  }).catch(() => {});
+                }
               } catch {
                 window.open(pipeline.resultUrl!, "_blank");
               }
@@ -130,7 +137,7 @@ export function BuyLookCta() {
 
       {/* Rating */}
       <div className="border-t border-white/10 pt-2">
-        <ResultRating pipelineId={pipeline.jobId} />
+        <ResultRating pipelineId={pipeline.jobId} leadEmail={lead?.email} />
       </div>
     </div>
   );

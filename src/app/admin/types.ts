@@ -1,9 +1,18 @@
+export interface LeadEvent {
+  type: "signup" | "photo_upload" | "product_selected" | "product_removed"
+      | "tryon_started" | "tryon_completed" | "tryon_failed"
+      | "buy_click" | "rating" | "download";
+  data?: Record<string, string | number>;
+  ts: number;
+}
+
 export interface Lead {
   email: string;
   phone: string;
   createdAt: string;
   tryOnCount: number;
   lastTryOn: string | null;
+  events: LeadEvent[];
 }
 
 export interface ProductStat {

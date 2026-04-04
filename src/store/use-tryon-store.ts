@@ -70,13 +70,37 @@ export const useTryOnStore = create<TryOnStore>((set, get) => ({
         body: JSON.stringify({ event: "funnel", step: "look_selected" }),
       }).catch(() => {});
     }
+    // Track lead event
+    if (state.lead?.email) {
+      fetch("/api/track-lead-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: state.lead.email,
+          type: "product_selected",
+          data: { productId: product.id, productName: product.name, category: product.category },
+        }),
+      }).catch(() => {});
+    }
   },
 
   removeItem: (category) => {
     const state = get();
+    const removed = state.selectedItems[category];
     set({
       selectedItems: { ...state.selectedItems, [category]: null },
     });
+    if (removed && state.lead?.email) {
+      fetch("/api/track-lead-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: state.lead.email,
+          type: "product_removed",
+          data: { productId: removed.id, productName: removed.name, category: removed.category },
+        }),
+      }).catch(() => {});
+    }
   },
 
   clearItems: () =>

@@ -5,9 +5,10 @@ import { showToast } from "./toast";
 
 interface ResultRatingProps {
   pipelineId?: string | null;
+  leadEmail?: string;
 }
 
-export function ResultRating({ pipelineId }: ResultRatingProps) {
+export function ResultRating({ pipelineId, leadEmail }: ResultRatingProps) {
   const [rating, setRating] = useState<"up" | "down" | null>(null);
 
   const handleRate = async (value: "up" | "down") => {
@@ -29,6 +30,15 @@ export function ResultRating({ pipelineId }: ResultRatingProps) {
       });
     } catch {
       // ignore
+    }
+
+    // Track lead event
+    if (leadEmail) {
+      fetch("/api/track-lead-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: leadEmail, type: "rating", data: { value } }),
+      }).catch(() => {});
     }
   };
 
